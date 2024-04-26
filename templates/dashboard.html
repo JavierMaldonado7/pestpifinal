@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <title>Dashboard</title>
+    <style>
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('farm.jpeg');
+            background-size: cover;
+            background-position: center;
+        }
+        .sidebar {
+            min-width: 250px;
+            max-width: 250px;
+            background-color: #e8f5e9;
+            height: 100vh;
+            padding: 20px;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .menu-item {
+            margin: 10px 0;
+            padding: 15px 20px;
+            font-size: 16px;
+            background: #a5d6a7;
+            text-decoration: none;
+            color: black;
+            display: block;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .menu-item:hover, .logout-button:hover {
+            background: #81c784;
+        }
+        .logout-button {
+            padding: 10px;
+            background-color: #4caf50;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            display: block;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .logout-button:hover {
+            background-color: #388e3c;
+        }
+        .card {
+            display: inline-block;
+            width: 200px;
+            height: 100px;
+            margin: 10px;
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+        .card-iguana { background-color: #3a6830; }
+        .card-rodent { background-color: #034c84; }
+        .card-boa { background-color: #954704; }
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .card-count {
+            font-size: 30px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+
+        <a href="#" class="menu-item">Alerts</a>
+        <a href="#" class="menu-item">Statistics</a>
+        <a href="#" class="menu-item">Camera</a>
+        <a href="#" class="menu-item">Settings</a>
+        <a href="/logout" class="menu-item logout-button">Logout</a>
+    </div>
+    <div class="content">
+        <!-- Content will be updated by JavaScript -->
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var menuItems = document.querySelectorAll('.menu-item:not(.logout-button)');
+        menuItems.forEach(function(item) {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const contentDiv = document.querySelector('.content');
+                switch (item.textContent.trim()) {
+                    case 'Alerts':
+                        contentDiv.innerHTML = `
+                            <h1>Alerts</h1>
+                            <div class="card card-iguana">
+                                <div class="card-title">Iguana</div>
+                                <div class="card-count" id="iguana-count">Loading...</div>
+                            </div>
+                            <div class="card card-rodent">
+                                <div class="card-title">Rodent</div>
+                                <div class="card-count" id="rodent-count">Loading...</div>
+                            </div>
+                            <div class="card card-boa">
+                                <div class="card-title">Boa</div>
+                                <div class="card-count" id="boa-count">Loading...</div>
+                            </div>
+                        `;
+                        updateAlertCounts();
+                        break;
+                    case 'Statistics':
+                        contentDiv.innerHTML = '<h1>Statistics</h1><p>Statistics content goes here...</p>';
+                        break;
+                    case 'Camera':
+                        contentDiv.innerHTML = `
+                            <h1>Camera Feed</h1>
+                            <select id="pestpi-selector" onchange="loadCameraFeed()">
+                                <option value="">Select a PestPi</option>
+                            </select>
+                            <div id="camera-feed">
+                                <p>No feed selected</p>
+                            </div>
+                        `;
+                        fetchPestPis();
+                        break;
+                    case 'Settings':
+                        contentDiv.innerHTML = `
+                            <h1>Settings</h1>
+                            <form id="update-email-form">
+                                <h2>Update Email</h2>
+                                <input type="email" id="new-email" placeholder="New Email" required />
+                                <button type="submit">Update Email</button>
+                            </form>
+                            <form id="update-password-form">
+                                <h2>Change Password</h2>
+                                <input type="password" id="new-password" placeholder="New Password" required />
+                                <button type="submit">Change Password</button>
+                            </form>
+                            <form id="configure-pestpi-form">
+                                <h2>Configure PestPi</h2>
+                                <input type="text" id="pi-ipmain" placeholder="Main IP" required />
+                                <input type="text" id="pi-location" placeholder="Location" required />
+                                <input type="text" id="pi-ip" placeholder="IP Address" required />
+                                <button type="submit">Configure PestPi</button>
+                            </form>
+                            <form id="set-mainpest-form">
+    <h2>Set Main PestPi</h2>
+    <input type="text" id="main-ip" placeholder="Main IP" required />
+    <button type="submit">Set Main PestPi</button>
+</form>
+                        `;
+                        attachFormEventListeners();
+                        break;
+                }
+                fetchPestPis();
+            });
+        });
+
+        function attachFormEventListeners() {
+            document.getElementById('update-email-form').addEventListener('submit', handleEmailUpdate);
+            document.getElementById('update-password-form').addEventListener('submit', handlePasswordChange);
+            document.getElementById('configure-pestpi-form').addEventListener('submit', configurePestPi);
+            document.getElementById('set-mainpest-form').addEventListener('submit', setMainPest);
+            var updatePasswordForm = document.getElementById('update-password-form');
+    if(updatePasswordForm) {
+        updatePasswordForm.addEventListener('submit', handlePasswordChange);
+    }
+        }
+
+        function updateAlertCounts() {
+            fetch('/api/alerts')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('iguana-count').textContent = data.iguana || 'No data';
+                    document.getElementById('rodent-count').textContent = data.rodent || 'No data';
+                    document.getElementById('boa-count').textContent = data.boa || 'No data';
+                })
+                .catch(error => {
+                    console.error('Error fetching alert data:', error);
+                    document.getElementById('iguana-count').textContent = 'Error';
+                    document.getElementById('rodent-count').textContent = 'Error';
+                    document.getElementById('boa-count').textContent = 'Error';
+                });
+        }
+
+function fetchPestPis() {
+    fetch('/api/pestpis')
+        .then(response => response.json())
+        .then(data => {
+            const selector = document.getElementById('pestpi-selector');
+            selector.innerHTML = '<option value="">Select a PestPi</option>'; // Clear previous options
+            data.forEach(pi => {
+                let option = new Option(pi.pi_location + ' (' + pi.pi_ip + ')', pi.pi_ip);
+                selector.appendChild(option);
+            });
+            // Attach the change event listener to the dropdown after options are populated
+            selector.onchange = loadCameraFeed;
+        })
+        .catch(error => console.error('Error fetching PestPis:', error));
+}
+
+        function loadCameraFeed() {
+    const ip = document.getElementById('pestpi-selector').value;
+    const feed = document.getElementById('camera-feed');
+    if (ip) {
+        // Assuming the camera stream is served at http://{pi_ip}:8080/stream
+        // Modify the port and endpoint if different in your setup
+        feed.innerHTML = `
+                            <img src="http://${ip}:8080/video_feed" type="video/mp4">
+
+                          `;
+    } else {
+        feed.innerHTML = '<p>No feed selected</p>';
+    }
+}
+
+
+        function handleEmailUpdate(e) {
+            e.preventDefault();
+            const newEmail = document.getElementById('new-email').value;
+            // AJAX request to update email
+        }
+
+        function handlePasswordChange(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password').value;
+            // AJAX request to update password
+        }
+
+        function configurePestPi(e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+        pi_ipmain: form.elements['pi-ipmain'].value,
+        pi_location: form.elements['pi-location'].value,
+        pi_ip: form.elements['pi-ip'].value
+    };
+
+    fetch('/configure_pestpi', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('PestPi configuration updated successfully!');
+    })
+    .catch(error => {
+        console.error('Error updating PestPi configuration:', error);
+        alert('Failed to update PestPi configuration.');
+    });
+}
+
+function handlePasswordChange(e) {
+    e.preventDefault();
+    const newPassword = document.getElementById('new-password').value;
+
+    fetch('/change_password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            // Include any other headers your server expects (e.g., authentication tokens)
+        },
+        body: JSON.stringify({
+            password: newPassword
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if(data.success) {
+            alert('Password updated successfully!');
+            // Additional logic for successful password change
+        } else {
+            alert('Failed to update the password.');
+            // Handle failed password change
+        }
+    })
+    .catch(error => {
+        console.error('There has been a problem with your fetch operation:', error);
+    });
+}
+
+        function setMainPest(e) {
+    e.preventDefault();
+    const mainIp = document.getElementById('main-ip').value;
+
+    fetch('/set_main_pestpi', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            main_ip: mainIp
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            alert('Main PestPi set successfully!');
+        } else {
+            alert('Failed to set Main PestPi.');
+        }
+    })
+    .catch(error => {
+        console.error('Error setting Main PestPi:', error);
+        alert('Failed to set Main PestPi due to an error.');
+    });
+}
+
+    });
+    </script>
+</body>
+</html>

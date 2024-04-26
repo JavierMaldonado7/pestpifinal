@@ -1,0 +1,10 @@
+path: C:\Users\jaime\PycharmProjects\flaskProject\data #dataset path ABSOLUTE PATH to dataset data folder
+train: C:\Users\jaime\PycharmProjects\flaskProject\data #Point to the one that has train AND labels directory
+val: C:\Users\jaime\PycharmProjects\flaskProject\data
+
+names:
+  0: Iguana
+  1: Rodent
+
+
+
