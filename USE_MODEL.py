@@ -16,7 +16,7 @@ if not ret:
 H, W, _ = frame.shape
 out = cv2.VideoWriter(video_path_out, cv2.VideoWriter_fourcc(*'mp4v'), int(cap.get(cv2.CAP_PROP_FPS)), (W, H))
 
-model_path = 'runs\\detect\\train6\\weights\\best.pt'
+model_path = 'runs\\detect\\train9\\weights\\best.pt'
 model = YOLO(model_path)  # Load a custom model
 threshold = 0.6
 

@@ -7,12 +7,23 @@
     <link rel="stylesheet" href="../static/css/style.css">
     <title>Dashboard</title>
     <style>
+        @font-face {
+  font-family: 'Roboto';
+  src: url('/font/Roboto-Regular.ttf') format('truetype'); /* Regular */
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('/font/Roboto-Bold.ttf') format('truetype'); /* Bold */
+  font-weight: 700;
+}
         body {
             display: flex;
             min-height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
-            background-image: url('farm.jpeg');
+  font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
+            background-image: url('/templates/farm.jpeg');
             background-size: cover;
             background-position: center;
         }
@@ -32,6 +43,8 @@
         }
         .menu-item {
             margin: 10px 0;
+              font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
+
             padding: 15px 20px;
             font-size: 16px;
             background: #a5d6a7;
@@ -41,12 +54,17 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .menu-item:hover, .logout-button:hover {
+        .menu-item.active {
             background: #81c784;
+            color: white;
+        }
+        .menu-item:hover {
+            background: #81c784;
+            color: white;
         }
         .logout-button {
             padding: 10px;
-            background-color: #4caf50;
+            background-color: #ff4d4d;
             color: white;
             text-decoration: none;
             text-align: center;
@@ -55,7 +73,7 @@
             border-radius: 5px;
         }
         .logout-button:hover {
-            background-color: #388e3c;
+            background-color: #ff1a1a;
         }
         .card {
             display: inline-block;
@@ -78,253 +96,856 @@
             font-size: 30px;
             font-weight: bold;
         }
+        select, input[type="text"], input[type="email"], input[type="password"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+              font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
+
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        form, .select-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            margin: 10px;
+        }
+                .chart-container {
+            width: 100%;
+            margin-top: 20px;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+        }
+.timeframe-select {
+    width: 200px; /* Set a fixed width for the select element */
+    margin: 20px auto; /* Top and bottom margin for space, left and right auto for centering */
+    display: block; /* Ensures the element respects the width property */
+}
+.select-container {
+    justify-content: flex-start; /* Align to the start to not stretch the child select element */
+    margin: 0 auto; /* Keep it centered in the content area */
+}
+
+
+.chart-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+        #head_ {
+        background-color: #4CAF50; /* Choose your desired background color */
+        padding: 20px 20px; /* Add padding for better appearance */
+        border-bottom: 2px solid #ccc; /* Optional: Add a border at the bottom */
+        margin-bottom: 20px; /* Optional: Add margin at the bottom to separate from other content */
+        font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
+        font-size: 44px ;
+        color: white;
+    }
+.chart-container {
+  flex: 1; /* Each chart container will take equal space */
+  margin: 20px;
+  max-width: 48%; /* This will ensure they don't go beyond half the parent container's width */
+}
+/* Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+
+   .modal-content {
+    background-color: #fefefe;
+    margin: auto; /* Center the modal vertically and horizontally */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%; /* Adjust as necessary */
+    max-width: 500px; /* Example maximum width */
+}
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+#alertImage {
+    display: block;
+    margin: auto; /* Center the image horizontally */
+    max-height: 70vh; /* Adjust the maximum height of the image */
+    max-width: 70vw; /* Adjust the maximum width of the image */
+}
+/* Responsive adjustments if necessary */
+@media (max-width: 768px) {
+  .chart-row {
+    flex-direction: column;
+  }
+
+  .chart-container {
+    max-width: 50%;
+  }
+}
+        .stats-select {
+            max-width: 300px; /* or any width you prefer */
+            margin: 0 20px; /* center the select element */
+        }
+
+        /* Sidebar button enhancements */
+        .sidebar .menu-item {
+            transition: background-color 0.3s, color 0.3s;
+            /* More styles can be added if needed */
+        }
+
+        /* Chart color adjustments */
+        .chart-color-iguana { background-color: #4caf50; }
+        .chart-color-rodent { background-color: #2196f3; }
+        .chart-color-boa { background-color: #ffc107; }
+
+/* Chart colors */
+.chart-color-iguana {
+    background-color: rgba(102, 187, 106, 0.2); /* Light green */
+    border-color: rgba(102, 187, 106, 1); /* Green */
+}
+
+.chart-color-rodent {
+    background-color: rgba(66, 165, 245, 0.2); /* Light blue */
+    border-color: rgba(66, 165, 245, 1); /* Blue */
+}
+
+.chart-color-boa {
+    background-color: rgba(239, 83, 80, 0.2); /* Light red */
+    border-color: rgba(239, 83, 80, 1); /* Red */
+}
+
+/* Selection box size */
+.stats-select {
+    max-width: 300px; /* or any width you prefer */
+}
+
+/* Sidebar menu item styles */
+.menu-item {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    text-align: left;
+    padding: 15px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-item:hover, .menu-item.active {
+    background-color: #388e3c; /* Darker green */
+}
+
+/* Responsive layout for charts */
+.chart-row {
+  display: flex;
+  flex-wrap: wrap; /* Allows charts to wrap on smaller screens */
+  justify-content: space-around; /* Space around items */
+  align-items: flex-start; /* Align to start to handle different heights */
+}
+
+.chart-container {
+  flex: 1; /* Take up full width */
+  max-width: 45%; /* Maximum of 45% of parent container */
+  margin: 10px;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    max-width: 100%; /* Full width on small screens */
+  }
+}
+        /* By ID, directly target the select element with id="timeframe-select" */
+#timeframe-select {
+    width: 200px; /* Adjust the width as needed */
+    margin-left: 0; /* Align to the left */
+    margin-right: 0; /* Optional, if you want no margin to the right */
+    display: inline-block; /* Align to the left with other inline elements */
+}
+
+/* Adjust the container to not center its children */
+.select-container {
+    justify-content: flex-start; /* Align children to the start (left) */
+}
+
+/* OR by class, if you're using a class for the select */
+.stats-select {
+    width: 200px; /* Adjust the width as needed */
+    display: block;
+    margin: 0 auto; /* Centers the dropdown in its container */
+}
+/* Style for the refresh button */
+.refresh-alerts-btn {
+  padding: 10px 20px;
+  background-color: #4CAF50; /* Green */
+
+    border: none;
+  padding: 8px 16px; /* Adjust padding to make buttons larger or smaller */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer;
+    max-width: 150px;
+}
+.refresh-alerts-btn:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+.update-table-button:hover {
+  background-color: #388e3c; /* Darker green */
+      font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
+
+}
+#alerts-table {
+    width: 100%;
+    border-collapse: collapse; /* Collapse borders between cells */
+    margin-top: 50px; /* Adjust this value to control how low the table appears */
+    margin-bottom: 20px; /* Add some margin at the bottom */
+}
+
+#alerts-table th,
+#alerts-table td {
+    border: 1px solid #ddd; /* Add borders to cells */
+    padding: 10px; /* Increase padding to enhance readability */
+    font-size: 18px; /* Increase font size for better readability */
+    font-family: 'Roboto', sans-serif; /* Consistent font family */
+}
+
+#alerts-table th {
+    background-color: #f2f2f2; /* Light gray background for table header */
+    text-align: left; /* Align text to the left in headers */
+    font-weight: bold; /* Make headers bold */
+}
+
+#alerts-table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Light gray background for even rows */
+}
+
+#alerts-table td:last-child {
+    width: 150px; /* Set a fixed width for the Actions column to make it narrower */
+}
+
+#alerts-table th:last-child {
+    width: 150px; /* Ensure the header of the Actions column also has the same fixed width */
+}
+
+
+/* Button styling */
+.remove-alert-btn {
+  background-color: #ff4d4d; /* Red color for remove button */
+  color: white; /* Text color */
+  border: none;
+  padding: 8px 16px; /* Adjust padding to make buttons larger or smaller */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer;
+}
+
+.remove-alert-btn:hover {
+  background-color: #ff1a1a; /* Darker red on hover */
+}
+
+
     </style>
 </head>
 <body>
     <div class="sidebar">
-
         <a href="#" class="menu-item">Alerts</a>
         <a href="#" class="menu-item">Statistics</a>
         <a href="#" class="menu-item">Camera</a>
         <a href="#" class="menu-item">Settings</a>
-        <a href="/logout" class="menu-item logout-button">Logout</a>
+        <a href="/logout" class="logout-button">Logout</a>
     </div>
     <div class="content">
         <!-- Content will be updated by JavaScript -->
     </div>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var menuItems = document.querySelectorAll('.menu-item:not(.logout-button)');
-        menuItems.forEach(function(item) {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                const contentDiv = document.querySelector('.content');
-                switch (item.textContent.trim()) {
-                    case 'Alerts':
-                        contentDiv.innerHTML = `
-                            <h1>Alerts</h1>
-                            <div class="card card-iguana">
-                                <div class="card-title">Iguana</div>
-                                <div class="card-count" id="iguana-count">Loading...</div>
-                            </div>
-                            <div class="card card-rodent">
-                                <div class="card-title">Rodent</div>
-                                <div class="card-count" id="rodent-count">Loading...</div>
-                            </div>
-                            <div class="card card-boa">
-                                <div class="card-title">Boa</div>
-                                <div class="card-count" id="boa-count">Loading...</div>
-                            </div>
-                        `;
-                        updateAlertCounts();
-                        break;
-                    case 'Statistics':
-                        contentDiv.innerHTML = '<h1>Statistics</h1><p>Statistics content goes here...</p>';
-                        break;
-                    case 'Camera':
-                        contentDiv.innerHTML = `
-                            <h1>Camera Feed</h1>
-                            <select id="pestpi-selector" onchange="loadCameraFeed()">
-                                <option value="">Select a PestPi</option>
-                            </select>
-                            <div id="camera-feed">
-                                <p>No feed selected</p>
-                            </div>
-                        `;
-                        fetchPestPis();
-                        break;
-                    case 'Settings':
-                        contentDiv.innerHTML = `
-                            <h1>Settings</h1>
-                            <form id="update-email-form">
-                                <h2>Update Email</h2>
-                                <input type="email" id="new-email" placeholder="New Email" required />
-                                <button type="submit">Update Email</button>
-                            </form>
-                            <form id="update-password-form">
-                                <h2>Change Password</h2>
-                                <input type="password" id="new-password" placeholder="New Password" required />
-                                <button type="submit">Change Password</button>
-                            </form>
-                            <form id="configure-pestpi-form">
-                                <h2>Configure PestPi</h2>
-                                <input type="text" id="pi-ipmain" placeholder="Main IP" required />
-                                <input type="text" id="pi-location" placeholder="Location" required />
-                                <input type="text" id="pi-ip" placeholder="IP Address" required />
-                                <button type="submit">Configure PestPi</button>
-                            </form>
-                            <form id="set-mainpest-form">
-    <h2>Set Main PestPi</h2>
-    <input type="text" id="main-ip" placeholder="Main IP" required />
-    <button type="submit">Set Main PestPi</button>
-</form>
-                        `;
-                        attachFormEventListeners();
-                        break;
-                }
-                fetchPestPis();
-            });
+   document.addEventListener('DOMContentLoaded', function() {
+    const contentDiv = document.querySelector('.content');
+    const menuItems = document.querySelectorAll('.menu-item:not(.logout-button)');
+    function locationSet(){
+}
+    menuItems.forEach(item => {
+        item.addEventListener('click', function(event) {
+            event.preventDefault();
+            setActiveMenuItem(item);
+            updateContentBasedOnMenuItem(item);
         });
+    });
 
-        function attachFormEventListeners() {
-            document.getElementById('update-email-form').addEventListener('submit', handleEmailUpdate);
-            document.getElementById('update-password-form').addEventListener('submit', handlePasswordChange);
-            document.getElementById('configure-pestpi-form').addEventListener('submit', configurePestPi);
-            document.getElementById('set-mainpest-form').addEventListener('submit', setMainPest);
-            var updatePasswordForm = document.getElementById('update-password-form');
-    if(updatePasswordForm) {
-        updatePasswordForm.addEventListener('submit', handlePasswordChange);
+    // Load 'Alerts' by default
+    document.querySelector('.menu-item').click();
+
+document.getElementById('alerts-tbody').addEventListener('click', function(event) {
+    if (event.target.className.includes('remove-alert-btn')) {
+        const alertId = event.target.getAttribute('data-alert-id');
+        removeAlert(alertId);
+    } else if (event.target.className.includes('view-image-btn')) {
+        const alertId = event.target.getAttribute('data-alert-id');
+        showImage(alertId);
     }
-        }
+});
+    function setActiveMenuItem(selectedItem) {
+        menuItems.forEach(item => item.classList.remove('active'));
+        selectedItem.classList.add('active');
+    }
 
-        function updateAlertCounts() {
-            fetch('/api/alerts')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('iguana-count').textContent = data.iguana || 'No data';
-                    document.getElementById('rodent-count').textContent = data.rodent || 'No data';
-                    document.getElementById('boa-count').textContent = data.boa || 'No data';
-                })
-                .catch(error => {
-                    console.error('Error fetching alert data:', error);
-                    document.getElementById('iguana-count').textContent = 'Error';
-                    document.getElementById('rodent-count').textContent = 'Error';
-                    document.getElementById('boa-count').textContent = 'Error';
-                });
+    function updateContentBasedOnMenuItem(item) {
+        switch (item.textContent.trim()) {
+            case 'Alerts':
+                updateContentToAlerts();
+                break;
+            case 'Statistics':
+                updateContentToStatistics();
+                break;
+            case 'Camera':
+                updateContentToCamera();
+                break;
+            case 'Settings':
+                updateContentToSettings();
+                break;
         }
+    }
 
-function fetchPestPis() {
-    fetch('/api/pestpis')
+    function updateContentToAlerts() {
+        contentDiv.innerHTML = `
+<div id="alertModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <img id="alertImage" style="width:100%;" />
+    </div>
+</div>
+<div id="head_">Alerts</div>
+<div class="dashboard-container" style="display: flex; justify-content: space-between;">
+    <div class="left-section" style="flex: 3; display: flex; flex-direction: column;">
+        <div class="cards-container">
+            <div class="card card-iguana">
+                <div class="card-title">Iguana</div>
+                <div class="card-count" id="iguana-count">Loading...</div>
+            </div>
+            <div class="card card-rodent">
+                <div class="card-title">Rodent</div>
+                <div class="card-count" id="rodent-count">Loading...</div>
+            </div>
+            <div class="card card-boa">
+                <div class="card-title">Boa</div>
+                <div class = "card-count" id="boa-count">Loading...</div>
+            </div>
+        </div>
+        <div class="alerts-section">
+            <table id="alerts-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="alerts-tbody">
+                    <!-- Alerts will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+            <button onclick="fetchAndDisplayAlerts()" class="refresh-alerts-btn">Refresh Alerts</button>
+        </div>
+    </div>
+<div class="filter-menu" style="flex: 1; padding-left: 20px; padding-right: 20px; padding-top: 20px; padding-bottom: 0; border: 2px solid #e0e0e0; border-radius: 10px; margin: 15px; background-color: #f9f9f9; max-height: 350px;">
+    <h2 style="font-size: 20px; font-weight: bold; background-color: #4CAF50; color: white; padding: 10px 15px; margin-bottom: 15px; border-radius: 5px;">Filter Alerts</h2>
+    <select id="alert-type-select" class="filter-select">
+        <option value="all">All Types</option>
+        <option value="Iguana">Iguana</option>
+        <option value="Rodent">Rodent</option>
+        <option value="Boa">Boa</option>
+    </select>
+        <select id="alert-date-select" class="filter-select">
+            <option value="all">All Dates</option>
+            <option value="today">Today</option>
+            <option value="this_week">This Week</option>
+            <option value="this_month">This Month</option>
+        </select>
+<select id="alert-location-select" class="filter-select">
+    <option value="all">All Locations</option>
+    <!-- Options will be inserted here by JavaScript -->
+</select>
+<button type="button" id="apply-filters-btn" class="refresh-alerts-btn">Apply Filters</button>
+    </div>
+</div>
+`;
+document.getElementById('apply-filters-btn').addEventListener('click', applyFilters);
+
+    document.getElementById('alerts-tbody').removeEventListener('click', handleAlertButtonClick);
+    document.getElementById('alerts-tbody').addEventListener('click', handleAlertButtonClick);
+
+    updateAlertCounts();
+  fetch('/api/locations')
+    .then(response => response.json())
+    .then(locations => {
+        const locationSelect = document.getElementById('alert-location-select');
+        locations.forEach(location => {
+            const option = document.createElement('option');
+            option.value = location;
+            option.textContent = location;
+            locationSelect.appendChild(option);
+        });
+    })
+    .catch(error => console.error('Error fetching locations:', error));
+    fetchAndDisplayAlerts();
+}
+function handleAlertButtonClick(event) {
+            event.preventDefault();  // This line stops the default form submission behavior
+
+    if (event.target.className.includes('remove-alert-btn')) {
+        const alertId = event.target.getAttribute('data-alert-id');
+        removeAlert(alertId);
+    } else if (event.target.className.includes('view-image-btn')) {
+        const alertId = event.target.getAttribute('data-alert-id');
+        showImage(alertId);
+    }
+}
+
+function applyFilters(event) {
+    event.preventDefault();
+
+    const alertType = document.getElementById('alert-type-select').value;
+    const alertDate = document.getElementById('alert-date-select').value;
+    const alertLocation = document.getElementById('alert-location-select').value;
+
+    let apiEndpoint = `/api/filter?`;
+    let queryParams = [];
+
+    if (alertType !== 'all') {
+        queryParams.push(`type=${alertType}`);
+    }
+    if (alertDate !== 'all') {
+        queryParams.push(`date=${alertDate}`);
+    }
+    if (alertLocation !== 'all') {
+        queryParams.push(`location=${alertLocation}`);
+    }
+    apiEndpoint += queryParams.join('&');
+
+    fetch(apiEndpoint)
+        .then(response => response.json())
+        .then(alerts => {
+            const alertsTableBody = document.getElementById('alerts-tbody');
+            alertsTableBody.innerHTML = '';
+            alerts.forEach(alert => {
+                const row = `<tr>
+                    <td>${alert.alert_type}</td>
+                    <td>${alert.alert_date}</td>
+                    <td>${alert.alert_location}</td>
+                    <td>
+                        <button class="view-image-btn" data-alert-id="${alert.alert_id}">View Image</button>
+                        <button class="remove-alert-btn" data-alert-id="${alert.alert_id}">Remove</button>
+                    </td>
+                </tr>`;
+                alertsTableBody.innerHTML += row;
+            });
+        })
+        .catch(error => console.error('Error applying filters:', error));
+}
+    function updateContentToStatistics() {
+        contentDiv.innerHTML = `
+            <div id="head_">Statistics</div>
+            <select id="timeframe-select" class="stats-select">
+                <option value="today">Today</option>
+                <option value="weekly">This Week</option>
+                <option value="monthly">This Month</option>
+                <option value="yearly">This Year</option>
+                <option value="all">All Time</option>
+            </select>
+            <div class="chart-row">
+                <div class="chart-container">
+                    <canvas id="alertBarChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="alertPieChart"></canvas>
+                </div>
+            </div>
+        `;
+        drawCharts();
+        document.getElementById('timeframe-select').addEventListener('change', function() {
+            drawCharts(this.value);
+        });
+    }
+
+    function updateContentToCamera() {
+        contentDiv.innerHTML = `
+            <div id="head_">Camera Feed</div>
+            <div class="select-container">
+                <select id="pestpi-selector">
+                    <option value="">Select a PestPi</option>
+                </select>
+            </div>
+            <div id="camera-feed">
+                <p>No feed selected</p>
+            </div>
+        `;
+        fetchPestPis();
+    }
+
+    function updateContentToSettings() {
+        contentDiv.innerHTML = `
+<div id="head_">Settings</div>
+            <div class="settings-container">
+                <form id="update-email-form">
+                    <h2>Update Email</h2>
+                    <input type="email" id="new-email" placeholder="New Email" required />
+                    <button type="submit">Update Email</button>
+                </form>
+                <form id="update-password-form">
+                    <h2>Change Password</h2>
+                    <input type="password" id="new-password" placeholder="New Password" required />
+                    <button type="submit">Change Password</button>
+                </form>
+                <form id="configure-pestpi-form">
+                    <h2>Configure PestPi</h2>
+                    <input type="text" id="pi-ipmain" placeholder="Main IP" required />
+                    <input type="text" id="pi-location" placeholder="Location" required />
+                    <input type="text" id="pi-ip" placeholder="IP Address" required />
+                    <button type="submit">Configure PestPi</button>
+                </form>
+            </div>
+        `;
+        attachFormEventListeners();
+    }
+
+    function attachFormEventListeners() {
+        document.getElementById('update-email-form').addEventListener('submit', handleEmailUpdate);
+        document.getElementById('update-password-form').addEventListener('submit', handlePasswordChange);
+        document.getElementById('configure-pestpi-form').addEventListener('submit', configurePestPi);
+    }
+
+    function handleEmailUpdate(e) {
+        e.preventDefault();
+        const newEmail = document.getElementById('new-email').value;
+        fetch('/update_email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: newEmail })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to update email');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('Email updated successfully!');
+        })
+        .catch(error => {
+            console.error('Error updating email:', error);
+            alert('Failed to update email.');
+        });
+    }
+
+    function handlePasswordChange(e) {
+        e.preventDefault();
+        const newPassword = document.getElementById('new-password').value;
+        fetch('/change_password', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: newPassword })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('Password updated successfully!');
+            } else {
+                alert('Failed to update the password.');
+            }
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+    }
+
+    function configurePestPi(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            pi_ipmain: form.elements['pi-ipmain'].value,
+            pi_location: form.elements['pi-location'].value,
+            pi_ip: form.elements['pi-ip'].value
+        };
+
+        fetch('/configure_pestpi', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
         .then(response => response.json())
         .then(data => {
-            const selector = document.getElementById('pestpi-selector');
-            selector.innerHTML = '<option value="">Select a PestPi</option>'; // Clear previous options
-            data.forEach(pi => {
-                let option = new Option(pi.pi_location + ' (' + pi.pi_ip + ')', pi.pi_ip);
-                selector.appendChild(option);
-            });
-            // Attach the change event listener to the dropdown after options are populated
-            selector.onchange = loadCameraFeed;
+            alert('PestPi configuration updated successfully!');
         })
-        .catch(error => console.error('Error fetching PestPis:', error));
-}
-
-        function loadCameraFeed() {
-    const ip = document.getElementById('pestpi-selector').value;
-    const feed = document.getElementById('camera-feed');
-    if (ip) {
-        // Assuming the camera stream is served at http://{pi_ip}:8080/stream
-        // Modify the port and endpoint if different in your setup
-        feed.innerHTML = `
-                            <img src="http://${ip}:8080/video_feed" type="video/mp4">
-
-                          `;
-    } else {
-        feed.innerHTML = '<p>No feed selected</p>';
+        .catch(error => {
+            console.error('Error updating PestPi configuration:', error);
+            alert('Failed to update PestPi configuration.');
+        });
     }
-}
 
-
-        function handleEmailUpdate(e) {
-            e.preventDefault();
-            const newEmail = document.getElementById('new-email').value;
-            // AJAX request to update email
-        }
-
-        function handlePasswordChange(e) {
-            e.preventDefault();
-            const newPassword = document.getElementById('new-password').value;
-            // AJAX request to update password
-        }
-
-        function configurePestPi(e) {
-    e.preventDefault();
-    const form = e.target;
-    const data = {
-        pi_ipmain: form.elements['pi-ipmain'].value,
-        pi_location: form.elements['pi-location'].value,
-        pi_ip: form.elements['pi-ip'].value
-    };
-
-    fetch('/configure_pestpi', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert('PestPi configuration updated successfully!');
-    })
-    .catch(error => {
-        console.error('Error updating PestPi configuration:', error);
-        alert('Failed to update PestPi configuration.');
-    });
-}
-
-function handlePasswordChange(e) {
-    e.preventDefault();
-    const newPassword = document.getElementById('new-password').value;
-
-    fetch('/change_password', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            // Include any other headers your server expects (e.g., authentication tokens)
-        },
-        body: JSON.stringify({
-            password: newPassword
+function fetchAndDisplayAlerts() {
+    fetch('/api/active_alerts')
+        .then(response => response.json())
+        .then(alerts => {
+            const alertsTableBody = document.getElementById('alerts-tbody');
+            alertsTableBody.innerHTML = '';  // Clear the table body
+            alerts.forEach(alert => {
+                const row = `<tr>
+                        <td>${alert.alert_type}</td>
+    <td>${alert.alert_date}</td>
+    <td>${alert.alert_location}</td>
+<td>
+    <button type="button" class="view-image-btn" data-alert-id="${alert.alert_id}">View Image</button>
+    <button type="button" data-alert-id="${alert.alert_id}" class="remove-alert-btn">Remove</button>
+</td>
+                </tr>`;
+                alertsTableBody.innerHTML += row;
+                            const alertElement = document.querySelector(`[data-alert-id="${alert.alert_id}"]`);
+            alertElement.addEventListener('click', function() {
+                displayAlertDetails(alert);
+            });
         })
-    })
+        .catch(error => {
+            console.error('Error fetching and displaying alerts:', error);
+        });
+        });
+}
+
+function showImage(alertId) {
+    fetch(`/api/image/${alertId}`)
     .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        if(data.success) {
-            alert('Password updated successfully!');
-            // Additional logic for successful password change
+        if (response.ok) {
+            return response.blob();
         } else {
-            alert('Failed to update the password.');
-            // Handle failed password change
+            throw new Error('Image not available.');
         }
+    })
+    .then(blob => {
+        const modal = document.getElementById('alertModal');
+        modal.style.display = 'block';
+
+
+        const closeButton = modal.querySelector('.close');
+        closeButton.onclick = function() {
+            modal.style.display = 'none';
+        };
+
+        const reader = new FileReader();
+        reader.onload = function() {
+            const alertImage = document.getElementById('alertImage');
+            alertImage.src = reader.result;
+        };
+        reader.readAsDataURL(blob);
     })
     .catch(error => {
-        console.error('There has been a problem with your fetch operation:', error);
+        console.error('Failed to fetch image:', error);
+        alert('Failed to load image.');
     });
 }
 
-        function setMainPest(e) {
-    e.preventDefault();
-    const mainIp = document.getElementById('main-ip').value;
 
-    fetch('/set_main_pestpi', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            main_ip: mainIp
+window.onclick = function(event) {
+    const modal = document.getElementById('alertModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+};
+
+
+    function removeAlert(alertId) {
+        fetch('/api/remove_alert', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ alert_id: alertId })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.success) {
-            alert('Main PestPi set successfully!');
-        } else {
-            alert('Failed to set Main PestPi.');
-        }
-    })
-    .catch(error => {
-        console.error('Error setting Main PestPi:', error);
-        alert('Failed to set Main PestPi due to an error.');
-    });
-}
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Alert removed successfully.");
+                fetchAndDisplayAlerts();
+                updateAlertCounts() ;// Reload alerts
+            } else {
+                alert('Failed to remove the alert: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while removing the alert.');
+        });
+    }
 
-    });
+    function updateAlertCounts() {
+        fetch('/api/alerts')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('iguana-count').textContent = data.iguana || '0';
+                document.getElementById('rodent-count').textContent = data.rodent || '0';
+                document.getElementById('boa-count').textContent = data.boa || '0';
+            })
+            .catch(error => {
+                console.error('Error fetching alert data:', error);
+            });
+    }
+
+    function fetchPestPis() {
+        fetch('/api/pestpis')
+            .then(response => response.json())
+            .then(data => {
+                const selector = document.getElementById('pestpi-selector');
+                selector.innerHTML = '<option value="">Select a PestPi</option>';
+                data.forEach(pi => {
+                    let option = new Option(pi.pi_location + ' (' + pi.pi_ip + ')', pi.pi_ip);
+                    selector.appendChild(option);
+                });
+                selector.onchange = loadCameraFeed;
+            })
+            .catch(error => console.error('Error fetching PestPis:', error));
+    }
+
+    function loadCameraFeed() {
+        const ip = document.getElementById('pestpi-selector').value;
+        const feed = document.getElementById('camera-feed');
+        if (ip) {
+            feed.innerHTML = `<img src="http://${ip}:8080/video_feed" type="video/mp4">`;
+        } else {
+            feed.innerHTML = '<p>No feed selected</p>';
+        }
+    }
+
+    function drawCharts(timeframe = 'today') {
+        // Fetch statistics data from the server
+        fetch(`/api/stats?timeframe=${timeframe}`)
+            .then(response => response.json())
+            .then(data => {
+                const alertLabels = data.map(alert => alert.type);
+                const alertCounts = data.map(alert => alert.count);
+
+                const ctxBar = document.getElementById('alertBarChart').getContext('2d');
+                const ctxPie = document.getElementById('alertPieChart').getContext('2d');
+
+                // Destroy existing charts if they exist
+                if (window.barChart) window.barChart.destroy();
+                if (window.pieChart) window.pieChart.destroy();
+
+                window.barChart = new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: alertLabels,
+                        datasets: [{
+                            label: 'Number of Alerts',
+                            data: alertCounts,
+                            backgroundColor: [
+                                '#FF6384', // Pinkish-red
+                                '#36A2EB', // Light blue
+                                '#FFCE56', // Yellow
+                                '#cc65fe', // Purple
+                                '#ff9f40'  // Orange
+                            ],
+                            borderColor: [
+                                '#FF6384', // Pinkish-red
+                                '#36A2EB', // Light blue
+                                '#FFCE56', // Yellow
+                                '#cc65fe', // Purple
+                                '#ff9f40'  // Orange
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+
+                window.pieChart = new Chart(ctxPie, {
+                    type: 'pie',
+                    data: {
+                        labels: alertLabels,
+                        datasets: [{
+                            data: alertCounts,
+                            backgroundColor: [
+                                '#FF6384', // Pinkish-red
+                                '#36A2EB', // Light blue
+                                '#FFCE56', // Yellow
+                                '#cc65fe', // Purple
+                                '#ff9f40'  // Orange
+                            ],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching statistics:', error);
+            });
+    }
+});
+
     </script>
 </body>
 </html>
