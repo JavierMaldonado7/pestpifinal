@@ -36,7 +36,7 @@ old_stdout = sys.stdout
 sys.stdout = output = io.StringIO()
 
 # Start training
-model.train(data="config.yaml", epochs=20)  # Adjust the number of epochs if needed
+model.train(data="config.yaml", epochs=10)  # Adjust the number of epochs if needed
 
 # Reset stdout
 sys.stdout = old_stdout

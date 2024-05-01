@@ -329,6 +329,18 @@ def get_alerts():
         'boa': boa_count
     })
 
+@app.route('/api/card_alerts')
+def get_card():
+    iguana_count = Alert.query.filter_by(alert_type='Iguana', alert_isactive=True,user_id=get_current_user_id()).count()
+    rodent_count = Alert.query.filter_by(alert_type='Rodent', alert_isactive=True,user_id=get_current_user_id()).count()
+    boa_count = Alert.query.filter_by(alert_type='Boa', alert_isactive=True,user_id=get_current_user_id()).count()
+
+    return jsonify({
+        'iguana': iguana_count,
+        'rodent': rodent_count,
+        'boa': boa_count
+    })
+
 
 @app.route('/update_email', methods=['POST'])
 def update_email():

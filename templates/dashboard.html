@@ -751,7 +751,7 @@ function applyFilters(event) {
 }
     function updateContentToStatistics() {
 contentDiv.innerHTML = `
-<div id="head_" style="background-color: #4CAF50; padding: 20px 20px; color: white; font-size: 30px; text-align: center;">Statistics</div>
+<div id="head_">Statistics</div>
 <div class="statistics-container" style="display: flex; flex-direction: row; justify-content: space-between; padding: 20px; width: 100%;">
     <div class="filter-menu-stats" style="flex: 1; background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin-right: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
         <h2 style='font-size: 20px; font-weight: bold; background-color: #4CAF50; color: white; padding: 10px 15px; margin-bottom: 15px; border-radius: 5px;'>Filter Statistics</h2>
@@ -1318,12 +1318,12 @@ window.onclick = function(event) {
     }
 
     function updateAlertCounts() {
-        fetch('/api/alerts')
+        fetch('/api/card_alerts')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('iguana-count').textContent = data.iguana || '0';
-                document.getElementById('rodent-count').textContent = data.rodent || '0';
-                document.getElementById('boa-count').textContent = data.boa || '0';
+                document.getElementById('iguana-count').textContent = data.iguana;
+                document.getElementById('rodent-count').textContent = data.rodent;
+                document.getElementById('boa-count').textContent = data.boa ;
             })
             .catch(error => {
                 console.error('Error fetching alert data:', error);
