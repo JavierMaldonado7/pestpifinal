@@ -8,6 +8,8 @@
         body {
     font-family: Arial, sans-serif;
 
+    background-image: url('/static/farm.jpeg');
+
     background-size: cover;
     background-position: center;
     display: flex;
@@ -19,11 +21,11 @@
 
 .container {
     text-align: center;
-    background-image: url('farm.jpeg');
+
 }
 
 .login-box {
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.9);
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
@@ -83,12 +85,12 @@ button:hover {
 
     </style>
 </head>
-<body style="background-image: url('farm.jpeg');">
+<body>
     <div class="container">
         <div class="login-box">
             <h2>Pest-Pi</h2>
             <form id="loginForm">
-                <input type="email" id="email" placeholder="Email ID" required>
+                <input type="email" id="email" placeholder="User ID" required>
                 <input type="password" id="password" placeholder="Password" required>
                 <label><input type="checkbox"> Remember me</label>
                 <button type="submit">LOG IN</button>

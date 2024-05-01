@@ -1,6 +1,7 @@
 import base64
 import io
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -47,6 +48,16 @@ class Alert(db.Model):
     alert_isactive = db.Column(db.Boolean)
     image = db.Column(LargeBinary)
 
+    def serialize(self):
+        return {
+            'alert_id': self.alert_id,
+            'user_id': self.user_id,
+            'pi_id': self.pi_id,
+            'alert_type': self.alert_type,
+            'alert_date': self.alert_date.isoformat(),  # Or format as needed
+            'alert_isactive': self.alert_isactive,
+            'alert_location': get_pi_location(self.pi_id)  # Assuming you have a function to get location
+        }
     def __repr__(self):
         return f"<Alert {self.alert_id}, Type: {self.alert_type}, Date: {self.alert_date}, Active: {self.alert_isactive}>"
 
@@ -96,11 +107,42 @@ def logout():
 def dashboard():
 
     return render_template('dashboard.html', name=current_user.user_name)
+
+def calculate_date_range(filter_key):
+    current_time = datetime.utcnow()
+    if filter_key == 'today':
+        start_date = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_date = start_date + timedelta(days=1)
+    elif filter_key == 'this_week':
+        start_date = current_time - timedelta(days=current_time.weekday())
+        end_date = start_date + timedelta(weeks=1)
+    elif filter_key == 'this_month':
+        start_date = current_time.replace(day=1)
+        end_date = (start_date + relativedelta(months=1)) - timedelta(days=1)
+    return start_date, end_date
+
+def fetch_stats(timeframe):
+    now = datetime.utcnow()
+    query = Alert.query.with_entities(Alert.alert_type, func.count(Alert.alert_type).label('count'))
+    if timeframe == 'today':
+        query = query.filter(func.date(Alert.alert_date) == func.date(now))
+    elif timeframe == 'weekly':
+        week_ago = now - timedelta(days=7)
+        query = query.filter(Alert.alert_date >= week_ago)
+    elif timeframe == 'monthly':
+        query = query.filter(extract('year', Alert.alert_date) == now.year,
+                             extract('month', Alert.alert_date) == now.month)
+    elif timeframe == 'yearly':
+        query = query.filter(extract('year', Alert.alert_date) == now.year)
+    return [{'type': stat.alert_type, 'count': stat.count} for stat in query.group_by(Alert.alert_type).all()]
+
 @app.route('/api/filter')
 def get_filt():
     alert_type = request.args.get('type', 'all')
     date_filter = request.args.get('date', 'all')
     location_filter = request.args.get('location', 'all')
+
+    print(f"Received filters - Type: {alert_type}, Date: {date_filter}, Location: {location_filter}")
 
     query = Alert.query.filter(Alert.alert_isactive == True)
 
@@ -108,29 +150,28 @@ def get_filt():
         query = query.filter_by(alert_type=alert_type)
 
     if date_filter != 'all':
-        current_time = datetime.utcnow()
-        if date_filter == 'today':
-            start_date = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-            end_date = start_date + timedelta(days=1)
-        elif date_filter == 'this_week':
-            start_date = current_time - timedelta(days=current_time.weekday())
-            start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-            end_date = start_date + timedelta(days=7)
-        elif date_filter == 'this_month':
-            start_date = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            if start_date.month == 12:
-                end_date = start_date.replace(year=start_date.year + 1, month=1)
-            else:
-                end_date = start_date.replace(month=start_date.month + 1)
+        start_date, end_date = calculate_date_range(date_filter)
         query = query.filter(Alert.alert_date >= start_date, Alert.alert_date < end_date)
 
     if location_filter != 'all':
-        query = query.filter(get_pi_location( Alert.pi_id )== location_filter)
+        query = query.join(PestPi, Alert.pi_id == PestPi.pi_id).filter(PestPi.pi_location == location_filter)
+
     results = query.all()
-    alerts = [{'alert_id': alert.alert_id, 'alert_type': alert.alert_type, 'alert_date': alert.alert_date.strftime('%Y-%m-%d'),
-               'alert_location': get_pi_location(alert.pi_id)} for alert in results]
+    print(f"Query executed: {query}")  # SQLAlchemy will show the query being run
+    print(f"Number of results: {len(results)}")
+
+    alerts = [{
+        'alert_id': alert.alert_id,
+        'alert_type': alert.alert_type,
+        'alert_date': alert.alert_date.strftime('%Y-%m-%d %H:%M'),
+        'alert_location': get_pi_location(alert.pi_id)  # Double-check this function too
+    } for alert in results]
 
     return jsonify(alerts)
+
+
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -154,11 +195,86 @@ def login():
 def get_locations():
     locations = PestPi.query.with_entities(PestPi.pi_location).distinct()
     locations = [location.pi_location for location in locations]
-    print(locations)
     return jsonify(locations)
 
-from flask import jsonify
+@app.route('/api/stats/total_alerts')
+def total_alerts():
+    total = Alert.query.count()
+    return jsonify({'total_alerts': total})
+@app.route('/api/stats/alert_status')
+def alert_status():
+    print("I AM HERE")
+    active = Alert.query.filter_by(alert_isactive=True).count()
+    resolved = Alert.query.filter_by(alert_isactive=False).count()
+    return jsonify({'active': active, 'resolved': resolved})
+@app.route('/api/stats/alerts_by_type')
+def alerts_by_type():
+    stats = db.session.query(Alert.alert_type, func.count(Alert.alert_type).label('count')).group_by(Alert.alert_type).all()
+    return jsonify({atype: count for atype, count in stats})
 
+from sqlalchemy import  cast, Date
+
+@app.route('/api/stats/alerts_over_time')
+def alerts_over_time():
+    # Fetching data from the database, grouped by date
+    stats = db.session.query(
+        cast(Alert.alert_date, Date).label('date'),  # Ensure the date is treated as a Date object without time
+        func.count('*').label('count')
+    ).group_by('date').order_by('date').all()
+
+    # Converting data to a serializable format
+    result = {date.strftime("%Y-%m-%d"): count for date, count in stats}  # Format date as string "YYYY-MM-DD"
+
+    return jsonify(result)
+@app.route('/api/location_stats')
+def get_location_stats():
+    location_filter = request.args.get('location', 'most_frequent')
+    time_filter = request.args.get('time', 'all_time')
+
+    # Calculate date range based on the time filter
+    now = datetime.now()
+    if time_filter == 'today':
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_date = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+    elif time_filter == 'this_week':
+        start_date = now - timedelta(days=now.weekday())
+        end_date = now.replace(hour=23, minute=59, second=59, microsecond=999999)
+    elif time_filter == 'this_month':
+        start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        end_date = now.replace(day=28, hour=23, minute=59, second=59, microsecond=999999) + timedelta(days=4)  # Go to the end of the month
+        end_date = end_date - timedelta(days=end_date.day)
+    elif time_filter == 'this_year':
+        start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        end_date = now.replace(month=12, day=31, hour=23, minute=59, second=59, microsecond=999999)
+    else:
+        start_date = None
+        end_date = None
+
+    try:
+        # Construct the base query
+        query = db.session.query(
+            PestPi.pi_location,
+            func.count(Alert.alert_id).label('count')
+        ).join(Alert, PestPi.pi_id == Alert.pi_id)
+
+        # Apply time filter if specified
+        if start_date and end_date:
+            query = query.filter(Alert.alert_date >= start_date, Alert.alert_date <= end_date)
+
+        # Apply location filter
+        if location_filter != 'most_frequent':
+            query = query.filter(PestPi.pi_location == location_filter)
+
+        # Finalize the query
+        query = query.group_by(PestPi.pi_location)
+        if location_filter == 'most_frequent':
+            query = query.order_by(func.count(Alert.alert_id).desc()).limit(5)
+
+        stats = query.all()
+
+        return jsonify([{'location': stat[0], 'count': stat[1]} for stat in stats])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 @app.route('/api/pi_location/<int:pi_id>')
 def get_pi_location(pi_id):
     pi = PestPi.query.filter_by(pi_id=pi_id).first()
@@ -167,17 +283,32 @@ def get_pi_location(pi_id):
     else:
         return jsonify({'error': 'Pi not found'}), 404
 
+# @app.route('/api/active_alerts')
+# @login_required
+# def active_alerts():
+#     try:
+#
+#         alerts = Alert.query.filter_by(user_id=current_user.user_id, alert_isactive=True).order_by(Alert.alert_date.desc()).all()
+#         alerts_data = [{
+#             'alert_id': alert.alert_id,
+#             'alert_type': alert.alert_type,
+#             'alert_date': alert.alert_date.strftime("%Y-%m-%d %H:%M:%S"),
+#             'alert_location': get_pi_location(alert.pi_id)
+#         } for alert in alerts]
+#
+#         return jsonify(alerts_data), 200
+#     except Exception as e:
+#         print(e)
+#         return jsonify({'error': 'Failed to fetch alerts'}), 500
 @app.route('/api/active_alerts')
 @login_required
 def active_alerts():
     try:
-
-        alerts = Alert.query.filter_by(user_id=current_user.user_id, alert_isactive=True).order_by(Alert.alert_date.desc()).all()
+        alerts = Alert.query.with_entities(Alert.alert_id, Alert.alert_type, Alert.alert_date, Alert.pi_id).filter_by(user_id=current_user.user_id, alert_isactive=True).order_by(Alert.alert_date.desc()).all()
         alerts_data = [{
             'alert_id': alert.alert_id,
             'alert_type': alert.alert_type,
-            'alert_date': alert.alert_date.strftime("%Y-%m-%d %H:%M:%S"),
-            'alert_isactive': alert.alert_isactive,
+            'alert_date': alert.alert_date.strftime("%Y-%m-%d  %H:%M"),
             'alert_location': get_pi_location(alert.pi_id)
         } for alert in alerts]
 
@@ -185,6 +316,7 @@ def active_alerts():
     except Exception as e:
         print(e)
         return jsonify({'error': 'Failed to fetch alerts'}), 500
+
 @app.route('/api/alerts')
 def get_alerts():
     iguana_count = Alert.query.filter_by(alert_type='Iguana', alert_isactive=True).count()
@@ -307,59 +439,19 @@ def change_password():
     except Exception as e:
         print(e)
         return jsonify({'success': False, 'message': 'Failed to update the password'}), 500
+
 @app.route('/api/stats', methods=['GET'])
 @login_required
 def get_stats():
     timeframe = request.args.get('timeframe', 'daily')
-    now = datetime.utcnow()
-
-    if timeframe == 'today':
-        stats = Alert.query.with_entities(
-            Alert.alert_type,
-            func.count(Alert.alert_type).label('count')
-        ).filter(
-            func.date(Alert.alert_date) == func.date(now)
-        ).group_by(Alert.alert_type).all()
-
-    elif timeframe == 'weekly':
-        week_ago = now - timedelta(days=7)
-        stats = Alert.query.with_entities(
-            Alert.alert_type,
-            func.count(Alert.alert_type).label('count')
-        ).filter(Alert.alert_date >= week_ago).group_by(Alert.alert_type).all()
-
-    elif timeframe == 'monthly':
-        stats = Alert.query.with_entities(
-            Alert.alert_type,
-            func.count(Alert.alert_type).label('count')
-        ).filter(
-            extract('year', Alert.alert_date) == now.year,
-            extract('month', Alert.alert_date) == now.month
-        ).group_by(Alert.alert_type).all()
-
-    elif timeframe == 'yearly':
-        stats = Alert.query.with_entities(
-            Alert.alert_type,
-            func.count(Alert.alert_type).label('count')
-        ).filter(
-            extract('year', Alert.alert_date) == now.year
-        ).group_by(Alert.alert_type).all()
-
-    else:
-
-        stats = Alert.query.with_entities(
-            Alert.alert_type,
-            func.count(Alert.alert_type).label('count')
-        ).group_by(Alert.alert_type).all()
-
-    stats_data = [{'type': stat.alert_type, 'count': stat.count} for stat in stats]
+    stats_data = fetch_stats(timeframe)
     return jsonify(stats_data)
 
 from flask import jsonify
 
-@app.route('/api/remove_alert', methods=['POST'])
+@app.route('/api/del_alert', methods=['POST'])
 @login_required
-def remove_alert():
+def del_alert():
     try:
 
         data = request.get_json()
@@ -375,6 +467,24 @@ def remove_alert():
     except Exception as e:
         print(f"Error removing alert: {e}")
         return jsonify({"success": False, "message": "An error occurred while removing the alert."}), 500
+@app.route('/api/remove_alert', methods=['POST'])
+@login_required
+def remove_alert():
+    try:
+        data = request.get_json()
+        alert_id = data.get('alert_id')
+        alert = Alert.query.filter_by(alert_id=alert_id, user_id=current_user.user_id).first()
+
+        if alert:
+            # Correctly set the alert to inactive
+            alert.alert_isactive = False  # Use the correct attribute name
+            db.session.commit()
+            return jsonify({"success": True, "message": "Alert set to inactive successfully."}), 200
+        else:
+            return jsonify({"success": False, "message": "Alert not found or you do not have permission to modify it."}), 404
+    except Exception as e:
+        print(f"Error setting alert to inactive: {e}")
+        return jsonify({"success": False, "message": "An error occurred while updating the alert."}), 500
 
 from flask import send_file
 

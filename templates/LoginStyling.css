@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-image: url('farm.jpeg');
+    background-image: url('../static/farm.jpeg');
     background-size: cover;
     background-position: center;
     display: flex;

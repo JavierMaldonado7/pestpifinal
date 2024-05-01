@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+Chart.register(Chart.plugins.title);
+</script>
     <link rel="stylesheet" href="../static/css/style.css">
     <title>Dashboard</title>
     <style>
@@ -23,7 +26,7 @@
             min-height: 100vh;
             margin: 0;
   font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
-            background-image: url('/templates/farm.jpeg');
+            background-image: url('/farm.jpeg');
             background-size: cover;
             background-position: center;
         }
@@ -42,26 +45,27 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
         .menu-item {
-            margin: 10px 0;
-              font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
+                text-decoration: none;  /* Remove underline from text */
 
-            padding: 15px 20px;
-            font-size: 16px;
-            background: #a5d6a7;
-            text-decoration: none;
-            color: black;
-            display: block;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .menu-item.active {
-            background: #81c784;
-            color: white;
-        }
-        .menu-item:hover {
-            background: #81c784;
-            color: white;
-        }
+    margin: 15px 0;  /* Increase margin for more space between items */
+    padding: 20px 25px;  /* Increase padding for a larger button */
+    font-size: 20px;  /* Increase font size for better readability */
+    font-weight: bold;  /* Make the font bold */
+    background: #a5d6a7;  /* Slightly lighter green */
+    color: black;  /* Keep text color black for contrast */
+    display: block;
+    border-radius: 10px;  /* Increase border radius for a more rounded look */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;  /* Smooth transition for hover effects */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
+    text-align: center;  /* Center-align the text */
+}
+
+.menu-item.active, .menu-item:hover {
+    background: #81c784;  /* A more vivid green for active/hover state */
+    color: white;  /* Change text color to white for better visibility */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);  /* More prominent shadow on hover */
+}
         .logout-button {
             padding: 10px;
             background-color: #ff4d4d;
@@ -75,6 +79,14 @@
         .logout-button:hover {
             background-color: #ff1a1a;
         }
+        .settings-container {
+    display: flex;
+    flex-direction: row; /* Aligns children (forms) in a row */
+
+    align-items: flex-start; /* Aligns forms at the top */
+    flex-wrap: wrap; /* Allows wrapping of forms if the window is too narrow */
+    gap: 1px; /* Adds space between forms */
+}
         .card {
             display: inline-block;
             width: 200px;
@@ -108,6 +120,27 @@
               font-family: 'Roboto', sans-serif; /* Use Roboto as the default font */
 
         }
+        p {
+    font-family: 'Roboto', sans-serif; /* Consistent font family */
+    font-size: 16px; /* Adequate font size for readability */
+    color: #333; /* Softer color for easier reading */
+    line-height: 1.6; /* Spacing between lines */
+    text-align: justify; /* Aligns text for better readability */
+    background-color: #ffffff; /* Light background to pop out text */
+    padding: 10px 20px; /* Padding inside the text block */
+    border-radius: 8px; /* Rounded corners for a smoother look */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    margin: 10px; /* Spacing around paragraphs */
+    max-width: 800px; /* Maximum width for optimal reading line length */
+    margin-left: auto; /* Center align the paragraph */
+    margin-right: auto; /* Center align the paragraph */
+}
+
+/* Optional: Adds a slight hover effect to paragraph blocks */
+p:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
         button {
             background-color: #4CAF50;
             color: white;
@@ -127,10 +160,7 @@
             max-width: 500px;
             margin: 10px;
         }
-                .chart-container {
-            width: 100%;
-            margin-top: 20px;
-        }
+
         canvas {
             width: 100%;
             height: auto;
@@ -144,13 +174,54 @@
     justify-content: flex-start; /* Align to the start to not stretch the child select element */
     margin: 0 auto; /* Keep it centered in the content area */
 }
+.statistics-container {
+    display: flex;
+    padding: 10px;
 
-
-.chart-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
+
+
+#stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    padding: 15px; /* Adjust as needed */
+}
+#stats-table th {
+    background-color: #4CAF50; /* Deep green background for contrast */
+    color: white; /* White text for high contrast */
+    font-family: 'Roboto-Bold', sans-serif; /* Consistent font usage */
+    font-size: 18px; /* Larger font size for better readability */
+    font-weight: bold; /* Bold font weight for emphasis */
+    padding: 15px; /* Generous padding for a better visual structure */
+    text-align: center; /* Center-align the text */
+    border-bottom: 2px solid #ffffff; /* White border for subtle separation */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+#stats-table td {
+   font-family: 'Roboto-Bold', sans-serif; /* Consistent font usage */
+    font-size: 18px; /* Larger font size for better readability */
+    font-weight: bold; /* Bold font weight for emphasis */
+    padding: 15px; /* Generous padding for a better visual structure */
+    text-align: center; /* Center-align the text */
+    border-bottom: 1px solid #dddddd;
+}
+
+
+#stats-table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#stats-table tbody tr:hover {
+    background-color: #e8f5e9; /* Light green on hover for better interaction feedback */
+}
+
+#stats-table thead {
+    position: sticky;
+    top: 0; /* Makes the header sticky at the top of the table viewport */
+    z-index: 10;
+}
+
+
         #head_ {
         background-color: #4CAF50; /* Choose your desired background color */
         padding: 20px 20px; /* Add padding for better appearance */
@@ -160,11 +231,7 @@
         font-size: 44px ;
         color: white;
     }
-.chart-container {
-  flex: 1; /* Each chart container will take equal space */
-  margin: 20px;
-  max-width: 48%; /* This will ensure they don't go beyond half the parent container's width */
-}
+
 /* Modal (background) */
 .modal {
   display: none; /* Hidden by default */
@@ -220,20 +287,78 @@
     max-height: 70vh; /* Adjust the maximum height of the image */
     max-width: 70vw; /* Adjust the maximum width of the image */
 }
-/* Responsive adjustments if necessary */
-@media (max-width: 768px) {
-  .chart-row {
-    flex-direction: column;
-  }
 
-  .chart-container {
-    max-width: 50%;
-  }
+.stats-options {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
 }
-        .stats-select {
-            max-width: 300px; /* or any width you prefer */
-            margin: 0 20px; /* center the select element */
-        }
+
+.stats-select {
+    margin-right: 10px;
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: row;
+}
+.filter-menu {
+    flex: 1;
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    margin: 15px;
+    background-color: #f9f9f9;
+    max-height: 300px;
+}
+.filter-menu-stats {
+    flex: 1; /* Adjust size as necessary */
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    margin-right: 20px; /* Add margin between the filter and the chart */
+    background-color: #f9f9f9;
+    max-height: 300px;
+    max-width: 300px;
+}
+canvas2 {
+    width: 100% !important;
+    height: auto !important; /* or set a fixed height */
+}
+
+.filter-menu h2 {
+    font-size: 20px;
+    font-weight: bold;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.filter-options {
+    margin-bottom: 15px;
+}
+
+.filter-select {
+    margin-right: 10px;
+}
+
+.apply-filters-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.apply-filters-btn:hover {
+    background-color: #45a049;
+}
+
+
+
 
         /* Sidebar button enhancements */
         .sidebar .menu-item {
@@ -282,25 +407,8 @@
     background-color: #388e3c; /* Darker green */
 }
 
-/* Responsive layout for charts */
-.chart-row {
-  display: flex;
-  flex-wrap: wrap; /* Allows charts to wrap on smaller screens */
-  justify-content: space-around; /* Space around items */
-  align-items: flex-start; /* Align to start to handle different heights */
-}
 
-.chart-container {
-  flex: 1; /* Take up full width */
-  max-width: 45%; /* Maximum of 45% of parent container */
-  margin: 10px;
-}
 
-@media (max-width: 768px) {
-  .chart-container {
-    max-width: 100%; /* Full width on small screens */
-  }
-}
         /* By ID, directly target the select element with id="timeframe-select" */
 #timeframe-select {
     width: 200px; /* Adjust the width as needed */
@@ -320,6 +428,38 @@
     display: block;
     margin: 0 auto; /* Centers the dropdown in its container */
 }
+.stats-table-container {
+        display: none; /* Hide the stats table container initially */
+
+    margin-top: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    max-height: 250px;
+    overflow-y: auto; /* Scroll only appears if the content overflows */
+}
+
+
+/* Enhance table aesthetics */
+#stats-table th, #stats-table td {
+    padding: 8px 10px; /* Reduce padding to decrease row height */
+    text-align: center; /* Center align text */
+}
+
+/* Responsive filter menu */
+.filter-menu-stats {
+    width: 100%; /* Use full container width */
+    box-sizing: border-box; /* Include padding and border in the element's width */
+}
+
+.chart-container {
+    padding: 0; /* Remove padding */
+    margin-top: 10px; /* Space between chart and filters */
+    width: auto; /* Adjust width based on content */
+    max-width: 100%; /* Prevent overflow */
+}
+
 /* Style for the refresh button */
 .refresh-alerts-btn {
   padding: 10px 20px;
@@ -331,8 +471,18 @@
   cursor: pointer;
     max-width: 150px;
 }
-.refresh-alerts-btn:hover {
+.refre-alerts-btn:hover {
     background-color: #45a049; /* Darker green on hover */
+}
+.refre-alerts-btn {
+  padding: 10px 20px;
+  background-color: #4CAF50; /* Green */
+
+    border: none;
+  padding: 8px 16px; /* Adjust padding to make buttons larger or smaller */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer;
+    max-width: 150px;
 }
 .update-table-button:hover {
   background-color: #388e3c; /* Darker green */
@@ -386,8 +536,21 @@
 .remove-alert-btn:hover {
   background-color: #ff1a1a; /* Darker red on hover */
 }
+.stats-content {
+    display: flex;
+    flex-direction: row;
+}
 
 
+
+.chart-container {
+    flex: 2; /* Let the chart take more space */
+    max-width: 800px; /* Remove any max-width if set */
+    max-height: 450px;
+    padding-right: 10px;
+    padding-left: 10px;
+
+}
     </style>
 </head>
 <body>
@@ -405,8 +568,7 @@
    document.addEventListener('DOMContentLoaded', function() {
     const contentDiv = document.querySelector('.content');
     const menuItems = document.querySelectorAll('.menu-item:not(.logout-button)');
-    function locationSet(){
-}
+
     menuItems.forEach(item => {
         item.addEventListener('click', function(event) {
             event.preventDefault();
@@ -474,6 +636,7 @@ document.getElementById('alerts-tbody').addEventListener('click', function(event
                 <div class = "card-count" id="boa-count">Loading...</div>
             </div>
         </div>
+
         <div class="alerts-section">
             <table id="alerts-table">
                 <thead>
@@ -488,10 +651,9 @@ document.getElementById('alerts-tbody').addEventListener('click', function(event
                     <!-- Alerts will be inserted here by JavaScript -->
                 </tbody>
             </table>
-            <button onclick="fetchAndDisplayAlerts()" class="refresh-alerts-btn">Refresh Alerts</button>
         </div>
     </div>
-<div class="filter-menu" style="flex: 1; padding-left: 20px; padding-right: 20px; padding-top: 20px; padding-bottom: 0; border: 2px solid #e0e0e0; border-radius: 10px; margin: 15px; background-color: #f9f9f9; max-height: 350px;">
+<div class="filter-menu" style="flex: 1; padding-left: 20px; padding-right: 10px; padding-top: 20px; padding-bottom: 0; border: 2px solid #e0e0e0; border-radius: 10px; margin: 15px; background-color: #f9f9f9; max-height: 350px;">
     <h2 style="font-size: 20px; font-weight: bold; background-color: #4CAF50; color: white; padding: 10px 15px; margin-bottom: 15px; border-radius: 5px;">Filter Alerts</h2>
     <select id="alert-type-select" class="filter-select">
         <option value="all">All Types</option>
@@ -509,29 +671,35 @@ document.getElementById('alerts-tbody').addEventListener('click', function(event
     <option value="all">All Locations</option>
     <!-- Options will be inserted here by JavaScript -->
 </select>
-<button type="button" id="apply-filters-btn" class="refresh-alerts-btn">Apply Filters</button>
+<button type="button" id="apply-filters-btn" class="refre-alerts-btn">Apply Filters</button>
+            <button onclick="fetchAndDisplayAlerts()" class="refresh-alerts-btn">Refresh Alerts</button>
+
     </div>
 </div>
 `;
-document.getElementById('apply-filters-btn').addEventListener('click', applyFilters);
 
     document.getElementById('alerts-tbody').removeEventListener('click', handleAlertButtonClick);
     document.getElementById('alerts-tbody').addEventListener('click', handleAlertButtonClick);
+    document.querySelector('.refresh-alerts-btn').addEventListener('click', refresh);
+    refresh();
+    loca();
+document.getElementById('apply-filters-btn').addEventListener('click', applyFilters);
 
-    updateAlertCounts();
-  fetch('/api/locations')
-    .then(response => response.json())
-    .then(locations => {
-        const locationSelect = document.getElementById('alert-location-select');
-        locations.forEach(location => {
-            const option = document.createElement('option');
-            option.value = location;
-            option.textContent = location;
-            locationSelect.appendChild(option);
-        });
-    })
-    .catch(error => console.error('Error fetching locations:', error));
-    fetchAndDisplayAlerts();
+
+}
+function loca() {
+    fetch('/api/locations')
+        .then(response => response.json())
+        .then(locations => {
+            const locationSelect = document.getElementById('alert-location-select');
+            locations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                locationSelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching locations:', error));
 }
 function handleAlertButtonClick(event) {
             event.preventDefault();  // This line stops the default form submission behavior
@@ -547,30 +715,25 @@ function handleAlertButtonClick(event) {
 
 function applyFilters(event) {
     event.preventDefault();
+    event.stopPropagation(); // Prevents any parent handlers from being executed
 
     const alertType = document.getElementById('alert-type-select').value;
     const alertDate = document.getElementById('alert-date-select').value;
     const alertLocation = document.getElementById('alert-location-select').value;
 
-    let apiEndpoint = `/api/filter?`;
-    let queryParams = [];
+    let queryParams = [
+        alertType !== 'all' ? `type=${encodeURIComponent(alertType)}` : null,
+        alertDate !== 'all' ? `date=${encodeURIComponent(alertDate)}` : null,
+        alertLocation !== 'all' ? `location=${encodeURIComponent(alertLocation)}` : null
+    ].filter(param => param !== null).join('&');
 
-    if (alertType !== 'all') {
-        queryParams.push(`type=${alertType}`);
-    }
-    if (alertDate !== 'all') {
-        queryParams.push(`date=${alertDate}`);
-    }
-    if (alertLocation !== 'all') {
-        queryParams.push(`location=${alertLocation}`);
-    }
-    apiEndpoint += queryParams.join('&');
+    let apiEndpoint = `/api/filter?${queryParams}`;
 
     fetch(apiEndpoint)
         .then(response => response.json())
         .then(alerts => {
             const alertsTableBody = document.getElementById('alerts-tbody');
-            alertsTableBody.innerHTML = '';
+            alertsTableBody.innerHTML = ''; // Clear previous entries
             alerts.forEach(alert => {
                 const row = `<tr>
                     <td>${alert.alert_type}</td>
@@ -587,29 +750,343 @@ function applyFilters(event) {
         .catch(error => console.error('Error applying filters:', error));
 }
     function updateContentToStatistics() {
-        contentDiv.innerHTML = `
-            <div id="head_">Statistics</div>
-            <select id="timeframe-select" class="stats-select">
+contentDiv.innerHTML = `
+<div id="head_" style="background-color: #4CAF50; padding: 20px 20px; color: white; font-size: 30px; text-align: center;">Statistics</div>
+<div class="statistics-container" style="display: flex; flex-direction: row; justify-content: space-between; padding: 20px; width: 100%;">
+    <div class="filter-menu-stats" style="flex: 1; background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin-right: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
+        <h2 style='font-size: 20px; font-weight: bold; background-color: #4CAF50; color: white; padding: 10px 15px; margin-bottom: 15px; border-radius: 5px;'>Filter Statistics</h2>
+        <div class="filter-options" style="margin-bottom: 20px;">
+            <select id="stats-time-select" class="filter-select" style="width: 100%; padding: 10px; margin-bottom: 10px; display: none;">
+                <option value="all_time">All Time</option>
                 <option value="today">Today</option>
-                <option value="weekly">This Week</option>
-                <option value="monthly">This Month</option>
-                <option value="yearly">This Year</option>
-                <option value="all">All Time</option>
+                <option value="this_week">This Week</option>
+                <option value="this_month">This Month</option>
+                <option value="this_year">This Year</option>
             </select>
-            <div class="chart-row">
-                <div class="chart-container">
-                    <canvas id="alertBarChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="alertPieChart"></canvas>
-                </div>
-            </div>
-        `;
-        drawCharts();
-        document.getElementById('timeframe-select').addEventListener('change', function() {
-            drawCharts(this.value);
-        });
+            <select id="stats-location-select" class="filter-select" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+                <option value="most_frequent">Most Frequent Locations</option>
+                <option value="alert_status">Alert Status</option>
+                <option value="alerts_by_type">Alerts by Type</option>
+                <option value="alerts_over_time">Alerts Over Time</option>
+            </select>
+        </div>
+        <button id="apply-stats-filters-btn" class="apply-filters-btn" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Apply Filters</button>
+    </div>
+    <div style="flex: 3; display: flex; flex-direction: row; align-items: start; justify-content: space-between;">
+        <div class="chart-container" style="flex: 1; background-color: #e8f5e9; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); margin-right: 20px;    align-items: center; /* Center content vertically */
+">
+            <canvas id="mainChart"></canvas>
+        </div>
+        <div id="stats-table-container" class="stats-table-container" style="flex: 1; max-width: 450px; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
+            <table id="stats-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th style="background-color: #4CAF50; color: white; padding: 10px;">Label</th>
+                        <th style="background-color: #4CAF50; color: white; padding: 10px;">Count</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-table-body">
+                    <!-- Data rows will be inserted here -->
+                </tbody>
+            </table>
+            <button id="export-csv-btn" class="apply-filters-btn" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Export to CSV</button>
+        </div>
+    </div>
+</div>`;
+
+
+
+
+    // Setup the event listener for the location select dropdown
+    document.getElementById('stats-location-select').addEventListener('change', toggleTimeSelectVisibility);
+    toggleTimeSelectVisibility();  // Call it on page load to set the initial state
+
+    // Reattach the event listener for the apply button every time content is updated
+    document.getElementById('apply-stats-filters-btn').addEventListener('click', applyStatsFilters);
+        document.getElementById('export-csv-btn').addEventListener('click', exportTableToCSV);
+
+}
+function exportTableToCSV() {
+    const table = document.getElementById('stats-table');
+    let csvContent = "data:text/csv;charset=utf-8,";
+    for (let row of table.rows) {
+        let rowData = Array.from(row.cells).map(cell =>
+            `"${cell.textContent.replace(/"/g, '""')}"`
+        ).join(',');
+        csvContent += rowData + "\r\n";
     }
+
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "stats_table.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Function to show/hide the time select based on location select value
+function toggleTimeSelectVisibility() {
+    const locationSelect = document.getElementById('stats-location-select');
+    const timeSelect = document.getElementById('stats-time-select');
+    if (locationSelect.value === 'most_frequent') {
+        timeSelect.style.display = 'block';  // Show time select
+    } else {
+        timeSelect.style.display = 'none';  // Hide time select
+    }
+}
+function updateTableHeaders(statType) {
+    const headerRow = document.getElementById('stats-table').querySelector('thead tr');
+    headerRow.innerHTML = '';  // Clear existing headers
+
+    // Customize headers based on the statistics type
+    switch(statType) {
+        case 'alert_status':
+            headerRow.innerHTML = '<th>Status</th><th>Count</th>';
+            break;
+        case 'alert_by_type':
+            headerRow.innerHTML = '<th>Alert Type</th><th>Count</th>';
+            break;
+        case 'alert_over_time':
+            headerRow.innerHTML = '<th>Date</th><th>Number of Alerts</th>';
+            break;
+        case 'most_frequent':
+            headerRow.innerHTML = '<th>Occurrences</th><th>Location</th>';
+            break;
+        default:
+            headerRow.innerHTML = '<th>Label</th><th>Count</th>'; // Default headers
+            break;
+    }
+}
+let currentChart = null;
+function updateStatsTable(data) {
+    const tableBody = document.getElementById('stats-table-body');
+    tableBody.innerHTML = ''; // Clear the table
+
+    data.forEach((item) => {
+        const row = `<tr>
+            <td>${item.label}</td>
+            <td>${item.count}</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+    });
+}
+function drawAlertStatusChart() {
+    updateTableHeaders('alert_status');
+
+    fetch('/api/stats/alert_status')
+        .then(response => response.json())
+        .then(data => {
+
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            if (currentChart) {
+                currentChart.destroy(); // Destroy the existing chart
+            }
+
+       currentChart=     new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Active', 'Resolved'],
+                    datasets: [{
+                        data: [data.active, data.resolved],
+                        backgroundColor: ['#ff6863', '#36eb7e'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                            responsive: true,plugins: {
+            legend: {
+                labels: {
+                    color: '#000000', // Bright white color for the legend text
+                    font: {
+                        size: 16, // Increased font size for better readability
+                        family: '"Lucida Grande", sans-serif', // Optional: Specify a different font family
+                        weight: 'bold' // Bold font weight to make the text stand out
+                    }
+                }
+            }
+        ,
+                    title: {
+            display: true,
+            text: 'Active vs Resolved Alerts',
+            color: '#000000', // Bright white color for the title
+            font: {
+                size: 20, // Larger font size for the title
+                weight: 'bold' // Bold font weight for the title
+            }
+        }
+            },
+        maintainAspectRatio: false, /* Makes chart responsive but ignores aspect ratio */
+        aspectRatio: 1    }
+            });
+        });
+}
+
+function drawAlertsByTypeChart() {
+    updateTableHeaders('alert_by_type');
+
+    fetch('/api/stats/alerts_by_type')
+        .then(response => response.json())
+        .then(data => {
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            const maxCount = Math.max(...values);
+            const grace = maxCount * 0.05; // 5% grace
+
+            currentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Alerts by Type',
+                        data: values,
+                        backgroundColor: ['#4CAF50', '#FFCE56', '#FF6384'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    scales: {xAxes: [{
+            ticks: {
+                fontColor: 'black', // Sets color
+                fontStyle: 'bold', // Sets style
+                fontSize: 14 // Sets font size
+            }
+        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function(value, index, values) {
+                                    // Ensures all values are rounded
+                                    return Math.round(value);
+                                }
+                            },
+                            afterBuildTicks: function(scale) {
+                                scale.ticks.push(scale.ticks[scale.ticks.length - 1] + grace);
+                            }
+                        }], y:{grace:'5%'}
+                    },
+                    responsive: true,plugins: {
+            legend: {
+                labels: {
+                    color: '#000000', // Bright white color for the legend text
+                    font: {
+                        size: 16, // Increased font size for better readability
+                        family: '"Lucida Grande", sans-serif', // Optional: Specify a different font family
+                        weight: 'bold' // Bold font weight to make the text stand out
+                    }
+                }
+            },title: {
+            display: true,
+            text: 'Alerts by Type',
+            color: '#000000', // Bright white color for the title
+            font: {
+                size: 20, // Larger font size for the title
+                weight: 'bold' // Bold font weight for the title
+            }
+        }
+        }
+                }
+            });
+        })
+        .catch(error => console.error('Failed to fetch data for chart:', error));
+}
+
+
+
+function drawAlertsOverTimeChart() {
+    updateTableHeaders('alert_over_time');
+
+    fetch('/api/stats/alerts_over_time')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const labels = Object.keys(data);
+            const values = labels.map(label => data[label]);
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            if (currentChart) {
+                currentChart.destroy(); // Destroy the existing chart
+            }
+            // Get the corresponding counts
+            const maxCount = Math.max(...values) + 1; // Find the max value and add one
+
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Alerts',
+                        data: values,
+                        fill: false,
+                        borderColor: 'rgb(129,47,63)',
+                        backgroundColor: 'rgba(230,94,104,0.94)',
+                        borderWidth: 2,
+                        lineTension: 0.1,color:"#000000",fontStyle:'bold'
+
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {color:"#000000",
+                                beginAtZero: true,
+                                suggestedMax: maxCount
+                            }
+                        }],
+                        xAxes: [{ ticks: {
+                fontColor: 'blue', // Sets color
+                fontStyle: 'bold', // Sets style
+                fontSize: 14 // Sets font size
+            },
+                            type: 'time',
+                            time: {
+                                parser: 'YYYY-MM-DD',
+                                unit: 'day',
+                                tooltipFormat: 'll',
+                                displayFormats: {
+                                    day: 'YYYY-MM-DD'
+                                }
+                            },
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Date'
+                            }
+                        }], y:{grace:'5%'}
+                    },
+                    responsive: true,plugins: {
+            legend: {
+                labels: {
+                    color: '#000000', // Bright white color for the legend text
+                    font: {
+                        size: 16, // Increased font size for better readability
+                        family: '"Lucida Grande", sans-serif', // Optional: Specify a different font family
+                        weight: 'bold' // Bold font weight to make the text stand out
+                    }
+                }
+            },
+
+        title: {
+            display: true,
+            text: 'Alerts Over Time',
+            color: '#000000', // Bright white color for the title
+            font: {
+                size: 20, // Larger font size for the title
+                weight: 'bold' // Bold font weight for the title
+            }
+        } },
+                }
+            });
+        })
+        .catch(error => console.error('Failed to fetch data for chart:', error));
+}
 
     function updateContentToCamera() {
         contentDiv.innerHTML = `
@@ -629,25 +1106,27 @@ function applyFilters(event) {
     function updateContentToSettings() {
         contentDiv.innerHTML = `
 <div id="head_">Settings</div>
-            <div class="settings-container">
-                <form id="update-email-form">
-                    <h2>Update Email</h2>
-                    <input type="email" id="new-email" placeholder="New Email" required />
-                    <button type="submit">Update Email</button>
-                </form>
-                <form id="update-password-form">
-                    <h2>Change Password</h2>
-                    <input type="password" id="new-password" placeholder="New Password" required />
-                    <button type="submit">Change Password</button>
-                </form>
-                <form id="configure-pestpi-form">
-                    <h2>Configure PestPi</h2>
-                    <input type="text" id="pi-ipmain" placeholder="Main IP" required />
-                    <input type="text" id="pi-location" placeholder="Location" required />
-                    <input type="text" id="pi-ip" placeholder="IP Address" required />
-                    <button type="submit">Configure PestPi</button>
-                </form>
-            </div>
+<div class="settings-container">
+    <form id="configure-pestpi-form" >
+        <h2>Configure PestPi</h2>
+        <input type="text" id="pi-ipmain" placeholder="Main IP" required />
+        <input type="text" id="pi-location" placeholder="Location" required />
+        <input type="text" id="pi-ip" placeholder="IP Address" required />
+        <button type="submit">Configure PestPi</button>
+    </form>
+    <form id="update-email-form">
+        <h2>Update User</h2>
+        <input type="email" id="new-email" placeholder="New User" required />
+        <button type="submit">Update User</button>
+    </form>
+    <form id="update-password-form">
+        <h2>Change Password</h2>
+        <input type="password" id="new-password" placeholder="New Password" required />
+        <button type="submit">Change Password</button>
+    </form>
+
+
+</div>
         `;
         attachFormEventListeners();
     }
@@ -738,6 +1217,8 @@ function applyFilters(event) {
     }
 
 function fetchAndDisplayAlerts() {
+
+
     fetch('/api/active_alerts')
         .then(response => response.json())
         .then(alerts => {
@@ -757,12 +1238,18 @@ function fetchAndDisplayAlerts() {
                             const alertElement = document.querySelector(`[data-alert-id="${alert.alert_id}"]`);
             alertElement.addEventListener('click', function() {
                 displayAlertDetails(alert);
+
             });
         })
         .catch(error => {
             console.error('Error fetching and displaying alerts:', error);
         });
         });
+}
+function refresh(){
+        fetchAndDisplayAlerts();
+                    updateAlertCounts();
+
 }
 
 function showImage(alertId) {
@@ -844,106 +1331,196 @@ window.onclick = function(event) {
     }
 
     function fetchPestPis() {
-        fetch('/api/pestpis')
-            .then(response => response.json())
-            .then(data => {
-                const selector = document.getElementById('pestpi-selector');
-                selector.innerHTML = '<option value="">Select a PestPi</option>';
-                data.forEach(pi => {
-                    let option = new Option(pi.pi_location + ' (' + pi.pi_ip + ')', pi.pi_ip);
-                    selector.appendChild(option);
-                });
-                selector.onchange = loadCameraFeed;
-            })
-            .catch(error => console.error('Error fetching PestPis:', error));
-    }
+    fetch('/api/pestpis')
+        .then(response => response.json())
+        .then(data => {
+            const selector = document.getElementById('pestpi-selector');
+            selector.innerHTML = '<option value="">Select a PestPi</option>';
+            data.forEach(pi => {
+                let option = new Option(pi.pi_location + ' (' + pi.pi_ip + ')', pi.pi_ip);
+                selector.appendChild(option);
+            });
+
+            // Attach onchange here to ensure it's set after options are populated
+            selector.onchange = loadCameraFeed;
+        })
+        .catch(error => console.error('Error fetching PestPis:', error));
+}
 
     function loadCameraFeed() {
-        const ip = document.getElementById('pestpi-selector').value;
-        const feed = document.getElementById('camera-feed');
-        if (ip) {
+    const ip = document.getElementById('pestpi-selector').value;
+    const feed = document.getElementById('camera-feed');
+
+    if (ip) {
+        // Clears previous content
+        feed.innerHTML = '<p>Loading camera feed...</p>';
+
+        // Attempt to load image
+        const img = new Image();
+        img.onload = function() {
             feed.innerHTML = `<img src="http://${ip}:8080/video_feed" type="video/mp4">`;
-        } else {
-            feed.innerHTML = '<p>No feed selected</p>';
-        }
+        };
+        img.onerror = function() {
+            feed.innerHTML = '<p>Camera not active, please verify location.</p>';
+        };
+        img.src = `http://${ip}:8080/video_feed`;
+    } else {
+        feed.innerHTML = '<p>No feed selected</p>';
     }
+}
+function applyStatsFilters() {
+    const timeFilter = document.getElementById('stats-time-select').value;
+    const locationFilter = document.getElementById('stats-location-select').value;
+    document.querySelector('.stats-table-container').style.display = 'block';
 
-    function drawCharts(timeframe = 'today') {
-        // Fetch statistics data from the server
-        fetch(`/api/stats?timeframe=${timeframe}`)
-            .then(response => response.json())
-            .then(data => {
-                const alertLabels = data.map(alert => alert.type);
-                const alertCounts = data.map(alert => alert.count);
+    drawChart(locationFilter, timeFilter);
+}
 
-                const ctxBar = document.getElementById('alertBarChart').getContext('2d');
-                const ctxPie = document.getElementById('alertPieChart').getContext('2d');
-
-                // Destroy existing charts if they exist
-                if (window.barChart) window.barChart.destroy();
-                if (window.pieChart) window.pieChart.destroy();
-
-                window.barChart = new Chart(ctxBar, {
-                    type: 'bar',
-                    data: {
-                        labels: alertLabels,
-                        datasets: [{
-                            label: 'Number of Alerts',
-                            data: alertCounts,
-                            backgroundColor: [
-                                '#FF6384', // Pinkish-red
-                                '#36A2EB', // Light blue
-                                '#FFCE56', // Yellow
-                                '#cc65fe', // Purple
-                                '#ff9f40'  // Orange
-                            ],
-                            borderColor: [
-                                '#FF6384', // Pinkish-red
-                                '#36A2EB', // Light blue
-                                '#FFCE56', // Yellow
-                                '#cc65fe', // Purple
-                                '#ff9f40'  // Orange
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        },
-                        responsive: true,
-                        maintainAspectRatio: false
+function drawCharts(locationFilter = 'most_frequent', timeFilter = 'all_time') {
+    console.log('Drawing charts with filters:', locationFilter, timeFilter); // Debugging: Check if drawing function is called
+    const apiUrl = `/api/location_stats?location=${locationFilter}&time=${timeFilter}`;
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const ctxPie = document.getElementById('locationPieChart').getContext('2d');
+            if (window.pieChart) window.pieChart.destroy();
+            window.pieChart = new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: data.map(d => d.location),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#cc65fe', '#ff9f40'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,plugins: {
+            legend: {
+                labels: {
+                    color: '#000000', // Bright white color for the legend text
+                    font: {
+                        size: 16, // Increased font size for better readability
+                        family: '"Lucida Grande", sans-serif', // Optional: Specify a different font family
+                        weight: 'bold' // Bold font weight to make the text stand out
                     }
-                });
+                }
+            }
+        },
+                    maintainAspectRatio: false,
+                    legend: { position: 'bottom', fontSize: 14, // Example size
+            fontStyle: 'bold' },
 
-                window.pieChart = new Chart(ctxPie, {
-                    type: 'pie',
-                    data: {
-                        labels: alertLabels,
-                        datasets: [{
-                            data: alertCounts,
-                            backgroundColor: [
-                                '#FF6384', // Pinkish-red
-                                '#36A2EB', // Light blue
-                                '#FFCE56', // Yellow
-                                '#cc65fe', // Purple
-                                '#ff9f40'  // Orange
-                            ],
-                            hoverOffset: 4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('Error fetching statistics:', error);
+                }
             });
+        })
+        .catch(error => console.error('Error fetching location statistics:', error));
+}
+function drawChart(statType = 'most_frequent', timeFilter = 'all_time') {
+
+
+    if (window.myChart) window.myChart.destroy(); // Destroy the previous chart if it exists
+
+    switch (statType) {
+        case 'most_frequent':
+            drawLocationStatsChart(timeFilter); // Function to draw location stats
+            break;
+        case 'alert_status':
+            drawAlertStatusChart(); // Function to draw alert status chart
+            break;
+        case 'alerts_by_type':
+            drawAlertsByTypeChart(); // Function to draw alerts by type chart
+            break;
+        case 'alerts_over_time':
+            drawAlertsOverTimeChart(); // Function to draw alerts over time chart
+            break;
+        default:
+            console.error('Unknown Stat Type:', statType);
+            break;
     }
+}
+function drawLocationStatsChart(timeFilter) {
+    updateTableHeaders('most_frequent');
+
+    const apiUrl = `/api/location_stats?time=${timeFilter}`;
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            const labels = data.map(d => d.count);
+            const values = data.map(d => d.location);
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            if (currentChart) {
+                currentChart.destroy(); // Destroy the existing chart
+            }
+            currentChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(d => d.location),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#cc65fe', '#ff9f40', '#af7f40'],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,plugins: {
+            legend: {
+                labels: {
+                    color: '#000000', // Bright white color for the legend text
+                    font: {
+                        size: 11, // Increased font size for better readability
+                        family: '"Lucida Grande", sans-serif', // Optional: Specify a different font family
+                        weight: 'bold' // Bold font weight to make the text stand out
+                    }
+                }
+            },        title: {
+            display: true,
+            text: 'Locations With the Most Alerts',
+            color: '#000000', // Bright white color for the title
+            font: {
+                size: 20, // Larger font size for the title
+                weight: 'bold' // Bold font weight for the title
+            }
+        }
+        },
+                    maintainAspectRatio: false,
+                    legend: {
+
+                        position: 'bottom',
+                        labels: {
+                                  fontColor: 'black', // Example color
+
+            fontStyle: 'bold', // Example style
+                            fontSize: 16, // Increase font size
+                            boxWidth: 20,
+                            padding: 20,
+                            generateLabels: function(chart) {
+                                // Display legend values in a table-like format
+                                var data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map(function(label, i) {
+                                        return {
+                                            text: label + " - " + data.datasets[0].data[i],
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: data.datasets[0].backgroundColor[i],
+                                            lineWidth: 0.5,
+                                            hidden: isNaN(data.datasets[0].data[i]) || chart.getDatasetMeta(0).data[i].hidden,
+                                            index: i
+                                        };
+                                    });
+                                } else {
+                                    return [];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching location statistics:', error));
+}
+
 });
 
     </script>
