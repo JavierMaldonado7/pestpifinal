@@ -29,14 +29,14 @@ def parse_output(output):
     return epochs, train_losses, val_losses
 
 # Load the model configuration
-model = YOLO("runs\detect\\train8\\weights\\best.pt")
+model = YOLO("runs\detect\\train10\\weights\\best.pt")
 
 # Redirect stdout to capture training output
 old_stdout = sys.stdout
 sys.stdout = output = io.StringIO()
 
 # Start training
-model.train(data="config.yaml", epochs=120)  # Adjust the number of epochs if needed
+model.train(data="config.yaml", epochs=20)  # Adjust the number of epochs if needed
 
 # Reset stdout
 sys.stdout = old_stdout
