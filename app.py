@@ -21,7 +21,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-
+import jwt
+from time import time
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True)
@@ -37,6 +38,19 @@ class User(UserMixin, db.Model):
 
     def get_id(self):
         return str(self.user_id)
+
+    def get_reset_password_token(self, expires_in=600):
+        return jwt.encode(
+            {'reset_password': self.user_id, 'exp': time() + expires_in},
+            app.config['SECRET_KEY'], algorithm='HS256')
+    @staticmethod
+    def verify_reset_password_token(token):
+        try:
+            user_id = jwt.decode(token, app.config['SECRET_KEY'],
+                                 algorithms=['HS256'])['reset_password']
+        except:
+            return None
+        return User.query.get(user_id)
 class Alert(db.Model):
     __tablename__ = 'alerts'
 
@@ -506,6 +520,53 @@ def get_image(alert_id):
             mimetype='image/jpeg'
         )
     return jsonify({'error': 'Image not found or access denied'}), 404
+from flask import jsonify
+from flask_mail import Mail, Message
+
+# Configure Flask-Mail
+app.config['MAIL_SERVER'] = 'live.smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'api'
+app.config['MAIL_PASSWORD'] = '58889bce877a0e312449a81ec8bb1f81'
+mail = Mail(app)
+
+@app.route('/send-reset-email', methods=['POST'])
+def send_reset_email():
+    email = request.form.get('email')
+    user = User.query.filter_by(user_email=email).first()
+    if not user:
+        return jsonify({'message': 'No account found with that email address.'}), 404
+
+    # Generate a password reset token
+    token = user.get_reset_password_token()  # This function needs to be implemented in the User model
+
+    # Compose the email message
+    msg = Message('Reset Your Password',
+                  sender='pestpi@pestpi.com',
+                  recipients=[email])
+    msg.body = f'''To reset your password, visit the following link:
+{url_for('reset_password', token=token, _external=True)}
+
+If you did not make this request then simply ignore this email and no changes will be made.
+'''
+    mail.send(msg)
+    return jsonify({'message': 'An email with instructions to reset your password has been sent to you.'}), 200
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.verify_reset_password_token(token)  # This needs to be added to your User model
+    if not user:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        password = request.form['password']
+        user.set_password(password)
+        db.session.commit()
+        flash('Your password has been reset.')
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html')
 
 if __name__ == '__main__':
     db.create_all()

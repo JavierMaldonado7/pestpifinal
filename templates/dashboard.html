@@ -553,9 +553,19 @@ canvas2 {
     padding-left: 10px;
 
 }
+.filter-menu, .filter-menu-stats {
+
+    overflow: hidden; /* Prevents overflow of content outside the container */
+
+}
+
+
     </style>
+    <link rel="icon" href="{{ url_for('static', filename='Pest_Pi_Iguana_Logo.png') }}">
+
 </head>
 <body>
+
     <div class="sidebar">
         <img src="/static/Pest_Pi_Iguana_Logo.png" style="padding: 5px;
     border-radius: 4px; width: 250px; height: 250px">
@@ -774,8 +784,8 @@ contentDiv.innerHTML = `
             </select>
             <select id="stats-location-select" class="filter-select" style="width: 100%; padding: 10px; margin-bottom: 10px;">
                 <option value="most_frequent">Most Frequent Locations</option>
-                <option value="alert_status">Alert Status</option>
-                <option value="alerts_by_type">Alerts by Type</option>
+                <option value="alert_status">Alerts Status</option>
+                <option value="alerts_by_type">All Time Alerts by Type</option>
                 <option value="alerts_over_time">Alerts Over Time</option>
             </select>
         </div>
@@ -892,7 +902,7 @@ function drawAlertStatusChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = Object.keys(data);
             const values = Object.values(data);
-            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels_ and counts
 
 
        currentChart=     new Chart(ctx, {
@@ -942,7 +952,7 @@ function drawAlertsByTypeChart() {
         .then(data => {
             const labels = Object.keys(data);
             const values = Object.values(data);
-            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels_ and counts
             const ctx = document.getElementById('mainChart').getContext('2d');
             if (currentChart) {
                 currentChart.destroy();
@@ -1020,7 +1030,7 @@ function drawAlertsOverTimeChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = Object.keys(data);
             const values = labels.map(label => data[label]);
-            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels_ and counts
             if (currentChart) {
                 currentChart.destroy(); // Destroy the existing chart
             }
@@ -1458,7 +1468,7 @@ function drawLocationStatsChart(timeFilter) {
             const ctx = document.getElementById('mainChart').getContext('2d');
             const labels = data.map(d => d.count);
             const values = data.map(d => d.location);
-            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
+            updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels_ and counts
             if (currentChart) {
                 currentChart.destroy(); // Destroy the existing chart
             }

@@ -1,11 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="{{ url_for('static', filename='Pest_Pi_Iguana_Logo.png') }}">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Login</title>
-    <style>
+    <style> .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 50%;
+            height: 50%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 40%; }
         body {
     font-family: Arial, sans-serif;
 
@@ -86,7 +104,7 @@ button:hover {
 
     </style>
 </head>
-<body>
+
     <div class="container">
         <div class="login-box">
               <img src="/static/Pest_Pi_Iguana_Logo.png" style="padding: 5px;
@@ -99,11 +117,40 @@ button:hover {
                 <button type="submit">LOG IN</button>
                 <div id="error-msg" style="color: red;"></div>
             </form>
+            <div id="resetModal" class="modal">
+    <div class="modal-content">
+        <span onclick="closeModal()" style="cursor:pointer; float: right;">&times; Close</span>
+        <h2>Reset Password</h2>
+        <p>Please enter your email address to receive a reset link.</p>
+        <input type="email" id="resetEmail" placeholder="Enter your email">
+        <button onclick="sendResetEmail()">Send Reset Link</button>
+    </div>
+</div>
             <p class="register-link">Don't have an account? <a href="/register">Register here</a>.</p>
         </div>
     </div>
 
-    <script>
+    <script> function showModal() {
+            document.getElementById('resetModal').style.display = 'block';
+        }
+        function closeModal() {
+            document.getElementById('resetModal').style.display = 'none';
+        }
+        function sendResetEmail() {
+            var email = document.getElementById('resetEmail').value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/send-reset-email', true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    alert('Reset link sent. Check your email.');
+                    closeModal();
+                } else {
+                    alert('Error sending reset link. Please try again.');
+                }
+            };
+            xhr.send('email=' + encodeURIComponent(email));
+        }
         document.getElementById('loginForm').onkeypress = function(e) {
     var key = e.charCode || e.keyCode || 0;
     if (key == 13) {

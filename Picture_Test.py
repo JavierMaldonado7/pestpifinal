@@ -72,7 +72,7 @@ class ImageEventHandler(FileSystemEventHandler):
             output_path = os.path.join(DETECTED_IMAGES_DIR, os.path.basename(image_path))
             cv2.imwrite(output_path, frame)
         else:
-            os.remove(image_path)  # Delete images with no detections
+            os.remove(image_path)  # Delete images_ with no detections
 
 if __name__ == '__main__':
     db.create_all()
