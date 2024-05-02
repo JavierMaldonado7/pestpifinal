@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 Chart.register(Chart.plugins.title);
 </script>
@@ -97,11 +98,12 @@ Chart.register(Chart.plugins.title);
             padding: 20px;
             position: relative;
         }
-        .card-iguana { background-color: #3a6830; }
-        .card-rodent { background-color: #034c84; }
-        .card-boa { background-color: #954704; }
+        .card-iguana { background-color: #3a6830;  background-repeat: no-repeat; background-blend-mode: lighten; background-image: url('/static/formal_lizard_dingbat.png'); background-size: 40% 60%; background-position-x: right; background-position-y: bottom;}
+        .card-rodent { background-color: #034c84;background-repeat: no-repeat; background-blend-mode: lighten; background-image: url('/static/rat_dingbat.png'); background-size: 40% 60%; background-position-x: right; background-position-y: bottom; }
+        .card-boa { background-color: #954704; background-repeat: no-repeat; background-blend-mode: lighten; background-image: url('/static/snake_dingbat.png'); background-size: 40% 60%; background-position-x: right; background-position-y: bottom; }
         .card-title {
-            font-size: 18px;
+            font-size: 24px;
+            font-weight: bold;
             margin-bottom: 5px;
         }
         .card-count {
@@ -555,11 +557,16 @@ canvas2 {
 </head>
 <body>
     <div class="sidebar">
-        <a href="#" class="menu-item">Alerts</a>
-        <a href="#" class="menu-item">Statistics</a>
-        <a href="#" class="menu-item">Camera</a>
-        <a href="#" class="menu-item">Settings</a>
-        <a href="/logout" class="logout-button">Logout</a>
+        <img src="/static/Pest_Pi_Iguana_Logo.png" style="padding: 5px;
+    border-radius: 4px; width: 250px; height: 250px">
+        <a href="#" class="menu-item" style="background-image: url('/static/alerts_bell.png'); background-repeat: no-repeat; background-size: 12% 50%; background-position-x: 200px; background-position-y: center;">Alerts</a>
+        <a href="#" class="menu-item"style="background-image: url('/static/barchart_dingbat.png'); background-repeat: no-repeat; background-size: 12% 50%; background-position-x: 200px; background-position-y: center;">Statistics</a>
+        <a href="#" class="menu-item"style="background-image: url('/static/camera_dingbat.png'); background-repeat: no-repeat; background-size: 12% 50%; background-position-x: 200px; background-position-y: center;">Camera</a>
+        <a href="#" class="menu-item" style="background-image: url('/static/settings_dingbat.png'); background-repeat: no-repeat; background-size: 12% 50%; background-position-x: 200px; background-position-y: center;">Settings</a>
+        <a href="/logout" class="logout-button" style="    text-align: center; font-weight: bold;
+    padding: 15px;
+    border-radius: 4px; font-size: 20px;
+    transition: background-color 0.3s ease;background-image: url('/static/door_logout_dingbat.png'); background-repeat: no-repeat; background-size: 12% 45%; background-position-x: 200px; background-position-y: 10px;">Logout</a>
     </div>
     <div class="content">
         <!-- Content will be updated by JavaScript -->
@@ -625,7 +632,9 @@ document.getElementById('alerts-tbody').addEventListener('click', function(event
         <div class="cards-container">
             <div class="card card-iguana">
                 <div class="card-title">Iguana</div>
+
                 <div class="card-count" id="iguana-count">Loading...</div>
+
             </div>
             <div class="card card-rodent">
                 <div class="card-title">Rodent</div>
@@ -873,7 +882,9 @@ function updateStatsTable(data) {
 }
 function drawAlertStatusChart() {
     updateTableHeaders('alert_status');
-
+    if (currentChart) {
+                currentChart.destroy(); // Destroy the existing chart
+            }
     fetch('/api/stats/alert_status')
         .then(response => response.json())
         .then(data => {
@@ -882,9 +893,7 @@ function drawAlertStatusChart() {
             const labels = Object.keys(data);
             const values = Object.values(data);
             updateStatsTable(labels.map((label, index) => ({ label: label, count: values[index] }))); // Update the table with labels and counts
-            if (currentChart) {
-                currentChart.destroy(); // Destroy the existing chart
-            }
+
 
        currentChart=     new Chart(ctx, {
                 type: 'doughnut',

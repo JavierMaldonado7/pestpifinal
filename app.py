@@ -198,36 +198,48 @@ def get_locations():
     return jsonify(locations)
 
 @app.route('/api/stats/total_alerts')
+@login_required
 def total_alerts():
-    total = Alert.query.count()
+    # Count only alerts belonging to the current user
+    total = Alert.query.filter_by(user_id=current_user.user_id).count()
     return jsonify({'total_alerts': total})
 @app.route('/api/stats/alert_status')
 def alert_status():
-    print("I AM HERE")
-    active = Alert.query.filter_by(alert_isactive=True).count()
-    resolved = Alert.query.filter_by(alert_isactive=False).count()
+
+    active = Alert.query.filter_by(alert_isactive=True,user_id=current_user.user_id).count()
+    resolved = Alert.query.filter_by(alert_isactive=False,user_id=current_user.user_id).count()
     return jsonify({'active': active, 'resolved': resolved})
 @app.route('/api/stats/alerts_by_type')
+@login_required
 def alerts_by_type():
-    stats = db.session.query(Alert.alert_type, func.count(Alert.alert_type).label('count')).group_by(Alert.alert_type).all()
+    user_id = current_user.user_id  # Retrieve the current user's ID
+    stats = db.session.query(
+        Alert.alert_type,
+        func.count(Alert.alert_type).label('count')
+    ).filter(Alert.user_id == user_id).group_by(Alert.alert_type).all()  # Filter by user_id and group by alert type
+
     return jsonify({atype: count for atype, count in stats})
 
 from sqlalchemy import  cast, Date
 
 @app.route('/api/stats/alerts_over_time')
+@login_required
 def alerts_over_time():
-    # Fetching data from the database, grouped by date
+    user_id = get_current_user_id()  # Get the current user's ID
+    # Fetching data from the database, grouped by date, filtered by the current user
     stats = db.session.query(
         cast(Alert.alert_date, Date).label('date'),  # Ensure the date is treated as a Date object without time
         func.count('*').label('count')
-    ).group_by('date').order_by('date').all()
+    ).filter(Alert.user_id == user_id).group_by('date').order_by('date').all()
 
     # Converting data to a serializable format
     result = {date.strftime("%Y-%m-%d"): count for date, count in stats}  # Format date as string "YYYY-MM-DD"
 
     return jsonify(result)
 @app.route('/api/location_stats')
+@login_required
 def get_location_stats():
+    user_id = current_user.user_id  # Get the current user's ID
     location_filter = request.args.get('location', 'most_frequent')
     time_filter = request.args.get('time', 'all_time')
 
@@ -255,7 +267,7 @@ def get_location_stats():
         query = db.session.query(
             PestPi.pi_location,
             func.count(Alert.alert_id).label('count')
-        ).join(Alert, PestPi.pi_id == Alert.pi_id)
+        ).join(Alert, PestPi.pi_id == Alert.pi_id).filter(Alert.user_id == user_id)
 
         # Apply time filter if specified
         if start_date and end_date:
@@ -275,6 +287,7 @@ def get_location_stats():
         return jsonify([{'location': stat[0], 'count': stat[1]} for stat in stats])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 @app.route('/api/pi_location/<int:pi_id>')
 def get_pi_location(pi_id):
     pi = PestPi.query.filter_by(pi_id=pi_id).first()
@@ -283,45 +296,28 @@ def get_pi_location(pi_id):
     else:
         return jsonify({'error': 'Pi not found'}), 404
 
-# @app.route('/api/active_alerts')
-# @login_required
-# def active_alerts():
-#     try:
-#
-#         alerts = Alert.query.filter_by(user_id=current_user.user_id, alert_isactive=True).order_by(Alert.alert_date.desc()).all()
-#         alerts_data = [{
-#             'alert_id': alert.alert_id,
-#             'alert_type': alert.alert_type,
-#             'alert_date': alert.alert_date.strftime("%Y-%m-%d %H:%M:%S"),
-#             'alert_location': get_pi_location(alert.pi_id)
-#         } for alert in alerts]
-#
-#         return jsonify(alerts_data), 200
-#     except Exception as e:
-#         print(e)
-#         return jsonify({'error': 'Failed to fetch alerts'}), 500
+
 @app.route('/api/active_alerts')
 @login_required
 def active_alerts():
-    try:
-        alerts = Alert.query.with_entities(Alert.alert_id, Alert.alert_type, Alert.alert_date, Alert.pi_id).filter_by(user_id=current_user.user_id, alert_isactive=True).order_by(Alert.alert_date.desc()).all()
-        alerts_data = [{
-            'alert_id': alert.alert_id,
-            'alert_type': alert.alert_type,
-            'alert_date': alert.alert_date.strftime("%Y-%m-%d  %H:%M"),
-            'alert_location': get_pi_location(alert.pi_id)
-        } for alert in alerts]
+    # Fetch only active alerts related to the logged-in user
+    alerts = Alert.query.filter_by(user_id=current_user.user_id, alert_isactive=True).order_by(Alert.alert_date.desc()).all()
+    alerts_data = [{
+        'alert_id': alert.alert_id,
+        'alert_type': alert.alert_type,
+        'alert_date': alert.alert_date.strftime("%Y-%m-%d  %H:%M"),
+        'alert_location': get_pi_location(alert.pi_id)
+    } for alert in alerts]
 
-        return jsonify(alerts_data), 200
-    except Exception as e:
-        print(e)
-        return jsonify({'error': 'Failed to fetch alerts'}), 500
+    return jsonify(alerts_data), 200
 
 @app.route('/api/alerts')
+@login_required
 def get_alerts():
-    iguana_count = Alert.query.filter_by(alert_type='Iguana', alert_isactive=True).count()
-    rodent_count = Alert.query.filter_by(alert_type='Rodent', alert_isactive=True).count()
-    boa_count = Alert.query.filter_by(alert_type='Boa', alert_isactive=True).count()
+    # Only fetch alerts for the current logged-in user
+    iguana_count = Alert.query.filter_by(user_id=current_user.user_id, alert_type='Iguana', alert_isactive=True).count()
+    rodent_count = Alert.query.filter_by(user_id=current_user.user_id, alert_type='Rodent', alert_isactive=True).count()
+    boa_count = Alert.query.filter_by(user_id=current_user.user_id, alert_type='Boa', alert_isactive=True).count()
 
     return jsonify({
         'iguana': iguana_count,
@@ -331,9 +327,9 @@ def get_alerts():
 
 @app.route('/api/card_alerts')
 def get_card():
-    iguana_count = Alert.query.filter_by(alert_type='Iguana', alert_isactive=True,user_id=get_current_user_id()).count()
-    rodent_count = Alert.query.filter_by(alert_type='Rodent', alert_isactive=True,user_id=get_current_user_id()).count()
-    boa_count = Alert.query.filter_by(alert_type='Boa', alert_isactive=True,user_id=get_current_user_id()).count()
+    iguana_count = Alert.query.filter_by(alert_type='Iguana', alert_isactive=True,user_id=current_user.user_id).count()
+    rodent_count = Alert.query.filter_by(alert_type='Rodent', alert_isactive=True,user_id=current_user.user_id).count()
+    boa_count = Alert.query.filter_by(alert_type='Boa', alert_isactive=True,user_id=current_user.user_id).count()
 
     return jsonify({
         'iguana': iguana_count,
