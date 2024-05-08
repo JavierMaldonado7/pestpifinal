@@ -100,7 +100,7 @@ Chart.register(Chart.plugins.title);
         }
         .card-iguana { background-color: #3a6830;  background-repeat: no-repeat; background-blend-mode: lighten; background-image: url('/static/formal_lizard_dingbat.png'); background-size: 40% 60%; background-position-x: right; background-position-y: bottom;}
         .card-rodent { background-color: #034c84;background-repeat: no-repeat; background-blend-mode: lighten; background-image: url('/static/rat_dingbat.png'); background-size: 40% 60%; background-position-x: right; background-position-y: bottom; }
-        .card-boa { background-color: #954704; background-repeat: no-repeat; background-blend-mode: lighten; background-image: url('/static/snake_dingbat.png'); background-size: 40% 60%; background-position-x: right; background-position-y: bottom; }
+        .card-Snake { background-color: #954704; background-repeat: no-repeat; background-blend-mode: lighten; background-image: url('/static/snake_dingbat.png'); background-size: 40% 60%; background-position-x: right; background-position-y: bottom; }
         .card-title {
             font-size: 24px;
             font-weight: bold;
@@ -371,7 +371,7 @@ canvas2 {
         /* Chart color adjustments */
         .chart-color-iguana { background-color: #4caf50; }
         .chart-color-rodent { background-color: #2196f3; }
-        .chart-color-boa { background-color: #ffc107; }
+        .chart-color-Snake { background-color: #ffc107; }
 
 /* Chart colors */
 .chart-color-iguana {
@@ -384,7 +384,7 @@ canvas2 {
     border-color: rgba(66, 165, 245, 1); /* Blue */
 }
 
-.chart-color-boa {
+.chart-color-Snake {
     background-color: rgba(239, 83, 80, 0.2); /* Light red */
     border-color: rgba(239, 83, 80, 1); /* Red */
 }
@@ -637,7 +637,7 @@ document.getElementById('alerts-tbody').addEventListener('click', function(event
     </div>
 </div>
 <div id="head_">Alerts</div>
-<div class="dashboard-container" style="display: flex; justify-content: space-between;">
+<div class="Dashboard-container" style="display: flex; justify-content: space-between;">
     <div class="left-section" style="flex: 3; display: flex; flex-direction: column;">
         <div class="cards-container">
             <div class="card card-iguana">
@@ -650,9 +650,9 @@ document.getElementById('alerts-tbody').addEventListener('click', function(event
                 <div class="card-title">Rodent</div>
                 <div class="card-count" id="rodent-count">Loading...</div>
             </div>
-            <div class="card card-boa">
-                <div class="card-title">Boa</div>
-                <div class = "card-count" id="boa-count">Loading...</div>
+            <div class="card card-Snake">
+                <div class="card-title">Snake</div>
+                <div class = "card-count" id="Snake-count">Loading...</div>
             </div>
         </div>
 
@@ -678,7 +678,7 @@ document.getElementById('alerts-tbody').addEventListener('click', function(event
         <option value="all">All Types</option>
         <option value="Iguana">Iguana</option>
         <option value="Rodent">Rodent</option>
-        <option value="Boa">Boa</option>
+        <option value="Snake">Snake</option>
     </select>
         <select id="alert-date-select" class="filter-select">
             <option value="all">All Dates</option>
@@ -1115,7 +1115,7 @@ function drawAlertsOverTimeChart() {
                     <option value="">Select a PestPi</option>
                 </select>
             </div>
-            <div id="camera-feed">
+            <div id="camera-feed" >
                 <p>No feed selected</p>
             </div>
         `;
@@ -1342,7 +1342,7 @@ window.onclick = function(event) {
             .then(data => {
                 document.getElementById('iguana-count').textContent = data.iguana;
                 document.getElementById('rodent-count').textContent = data.rodent;
-                document.getElementById('boa-count').textContent = data.boa ;
+                document.getElementById('Snake-count').textContent = data.Snake ;
             })
             .catch(error => {
                 console.error('Error fetching alert data:', error);
@@ -1377,7 +1377,7 @@ window.onclick = function(event) {
         // Attempt to load image
         const img = new Image();
         img.onload = function() {
-            feed.innerHTML = `<img src="http://${ip}:8080/video_feed" type="video/mp4">`;
+            feed.innerHTML = `<img  src="http://${ip}:8080/video_feed" type="video/mp4">`;
         };
         img.onerror = function() {
             feed.innerHTML = '<p>Camera not active, please verify location.</p>';

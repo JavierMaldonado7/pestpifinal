@@ -331,24 +331,24 @@ def get_alerts():
     # Only fetch alerts for the current logged-in user
     iguana_count = Alert.query.filter_by(user_id=current_user.user_id, alert_type='Iguana', alert_isactive=True).count()
     rodent_count = Alert.query.filter_by(user_id=current_user.user_id, alert_type='Rodent', alert_isactive=True).count()
-    boa_count = Alert.query.filter_by(user_id=current_user.user_id, alert_type='Boa', alert_isactive=True).count()
+    Snake_count = Alert.query.filter_by(user_id=current_user.user_id, alert_type='Snake', alert_isactive=True).count()
 
     return jsonify({
         'iguana': iguana_count,
         'rodent': rodent_count,
-        'boa': boa_count
+        'Snake': Snake_count
     })
 
 @app.route('/api/card_alerts')
 def get_card():
     iguana_count = Alert.query.filter_by(alert_type='Iguana', alert_isactive=True,user_id=current_user.user_id).count()
     rodent_count = Alert.query.filter_by(alert_type='Rodent', alert_isactive=True,user_id=current_user.user_id).count()
-    boa_count = Alert.query.filter_by(alert_type='Boa', alert_isactive=True,user_id=current_user.user_id).count()
+    Snake_count = Alert.query.filter_by(alert_type='Snake', alert_isactive=True,user_id=current_user.user_id).count()
 
     return jsonify({
         'iguana': iguana_count,
         'rodent': rodent_count,
-        'boa': boa_count
+        'Snake': Snake_count
     })
 
 
@@ -529,6 +529,7 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'api'
 app.config['MAIL_PASSWORD'] = '58889bce877a0e312449a81ec8bb1f81'
+app.config['MAIL_FROM_ADDRESS'] = 'pestpi@pest-pi.com'
 mail = Mail(app)
 
 @app.route('/send-reset-email', methods=['POST'])
@@ -543,7 +544,7 @@ def send_reset_email():
 
     # Compose the email message
     msg = Message('Reset Your Password',
-                  sender='pestpi@pestpi.com',
+                  sender='pestpi@pest-pi.com',
                   recipients=[email])
     msg.body = f'''To reset your password, visit the following link:
 {url_for('reset_password', token=token, _external=True)}
@@ -553,20 +554,26 @@ If you did not make this request then simply ignore this email and no changes wi
     mail.send(msg)
     return jsonify({'message': 'An email with instructions to reset your password has been sent to you.'}), 200
 
+
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
-    user = User.verify_reset_password_token(token)  # This needs to be added to your User model
+    user = User.verify_reset_password_token(token)
     if not user:
-        return redirect(url_for('login'))
+        return redirect(url_for('login'))  # Or return an error message
 
     if request.method == 'POST':
         password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        if password != confirm_password:
+            flash('Passwords must match.')
+            return redirect(url_for('reset_password', token=token))
+
         user.set_password(password)
         db.session.commit()
         flash('Your password has been reset.')
         return redirect(url_for('login'))
 
-    return render_template('reset_password.html')
+    return render_template('reset_password.html', token=token)
 
 if __name__ == '__main__':
     db.create_all()

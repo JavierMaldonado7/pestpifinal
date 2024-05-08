@@ -8,16 +8,16 @@
 
     <title>Login</title>
     <style> .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 50%;
-            height: 50%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
+    display: none;          /* Keep this to initially hide the modal */
+    position: fixed;        /* Fixed position to stay in place during scrolling */
+    top: 50%;               /* Position the top edge of the modal at the center of the page */
+    left: 20%;              /* Position the left edge of the modal at the center of the page */
+    transform: translate(-50%, -50%); /* Shift the modal up and left by half its height and width to center it */
+    width: 50%;             /* Set the width of the modal as a percentage of the screen width */
+    height: 50%;            /* Set the height of the modal as a percentage of the screen height */
+    z-index: 1000;          /* Ensure the modal is on top of other content */
+}
+
         .modal-content {
             background-color: #fefefe;
             margin: 15% auto;
@@ -125,7 +125,8 @@ button:hover {
         <input type="email" id="resetEmail" placeholder="Enter your email">
         <button onclick="sendResetEmail()">Send Reset Link</button>
     </div>
-</div>
+</div>            <p><a href="#" onclick="showModal()">Forgot Password?</a></p>
+
             <p class="register-link">Don't have an account? <a href="/register">Register here</a>.</p>
         </div>
     </div>
