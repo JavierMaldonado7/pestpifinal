@@ -1,0 +1,16 @@
+description: Ultralytics YOLOv8n model trained on config.yaml
+author: Ultralytics
+date: '2024-05-08T15:53:31.553138'
+version: 8.2.2
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+batch: 1
+imgsz:
+- 160
+- 160
+names:
+  0: Iguana
+  1: Rodent
+  2: Snake
