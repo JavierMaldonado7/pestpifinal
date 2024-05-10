@@ -1,89 +1,102 @@
 #!/usr/bin/env python3
-from flask import Flask, jsonify
-from flask_sqlalchemy import SQLAlchemy
 import os
 import cv2
-from ultralytics import YOLO
+import psycopg2
+from psycopg2 import sql
 from datetime import datetime
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from shutil import move
+from ultralytics import YOLO
+import threading
+import time
 
-
-app = Flask(__name__)
-
-# Database Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://uinvwsoqhrrdir:61030dacbc95ed5d0e86a87fda8166b1b58bf787e14170dab2dc52df3a1f84d0@ec2-52-5-167-89.compute-1.amazonaws.com:5432/d192656rsmtm0u'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = '61030dacbc95ed5d0e86a87fda8166b1b58bf787e14170dab2dc52df3a1f84d0'
-
-db = SQLAlchemy(app)
-
-# Define the Alert model
-class Alert(db.Model):
-    __tablename__ = 'alerts'
-    alert_id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
-    pi_id = db.Column(db.Integer, nullable=False)
-    alert_type = db.Column(db.String(20), nullable=False)
-    alert_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    alert_isactive = db.Column(db.Boolean, default=True, nullable=False)
-
-# Directory setup
-IMAGES_DIR = '/path/to/image_test'  # Adjust path for Linux
-OUTPUT_DIR = '/path/to/results'
-DETECTED_IMAGES_DIR = os.path.join(OUTPUT_DIR, 'detected')
+IMAGES_DIR = '/home/cs/MotionFiles'
+DETECTED_IMAGES_DIR = '/home/cs/Desktop/output/detected'
 
 if not os.path.exists(DETECTED_IMAGES_DIR):
     os.makedirs(DETECTED_IMAGES_DIR)
 
-model_path = '/path/to/best.pt'
-model = YOLO(model_path)
-threshold = 0.6
+model_path = 'best(1).pt'
+model = YOLO(model_path)  # Load a custom model
+threshold = 0.8
 
-class ImageEventHandler(FileSystemEventHandler):
-    def on_created(self, event):
-        if not event.is_directory:
-            self.process_image(event.src_path)
+# Database connection parameters
+dbname = "d12fhtfr8lc1ks"
+user = "vevnxnnnehlhcr"
+password = "bc565cc08ffecbeeac4ebda9e3362a43eb6b28031322c93304b87bb71a4314d0"
+host = "ec2-52-73-67-148.compute-1.amazonaws.com"
+port = "5432"
 
-    def process_image(self, image_path):
+def send_alert_to_db(user_id, pi_id, alert_type, image_path):
+    conn = None
+    try:
+        conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
+        cursor = conn.cursor()
         frame = cv2.imread(image_path)
+        if frame is None:
+            raise Exception(f"Unable to load image from {image_path}")
+        image_data = cv2.imencode('.jpg', frame)[1].tobytes()  # Convert image to bytes
+        query = sql.SQL("""
+            INSERT INTO alerts (user_id, pi_id, alert_type, alert_date, alert_isactive, image)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """)
+        values = (user_id, pi_id, alert_type, datetime.now(), True, image_data)
+        cursor.execute(query, values)
+        conn.commit()
+        print("Alert and first image stored successfully.")
+    except Exception as e:
+        print(f"Failed to send alert to DB: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+def delete_image(image_path):
+    if os.path.exists(image_path):
+        os.remove(image_path)
+        print(f"Deleted {image_path}")
+
+def process_images(image_paths):
+    detected = False
+    for image_path in image_paths:
+        frame = cv2.imread(image_path)
+        if frame is None:
+            print(f"Failed to read image: {image_path}")
+            delete_image(image_path)
+            continue
+
         results = model(frame)[0]
-
-        detected = False
-        for result in results.boxes.data.tolist():
-            x1, y1, x2, y2, score, class_id = result
-            if score > threshold:
-                detected = True
-                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 4)
-                cv2.putText(frame, results.names[int(class_id)].upper(), (int(x1), int(y1 - 10)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3, cv2.LINE_AA)
-
-                new_alert = Alert(
-                    user_id=1,  # Assuming user_id and pi_id are predefined
-                    pi_id=1,
-                    alert_type=results.names[int(class_id)],
-                    alert_date=datetime.utcnow(),
-                    alert_isactive=True
-                )
-                db.session.add(new_alert)
-                db.session.commit()
-
-        if detected:
-            output_path = os.path.join(DETECTED_IMAGES_DIR, os.path.basename(image_path))
-            cv2.imwrite(output_path, frame)
+        if results.boxes.data.size(0) > 0:  # Check if there are any detections
+            for result in results.boxes.data.tolist():
+                x1, y1, x2, y2, score, class_id = result
+                print(f"Detections: {results.names[int(class_id)]} with score {score}")  # Debug print
+                if score > threshold:
+                    detected = True
+                    cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 4)
+                    cv2.putText(frame, results.names[int(class_id)].upper(), (int(x1), int(y1 - 10)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 0, 255), 3, cv2.LINE_AA)
+                    output_path = os.path.join(DETECTED_IMAGES_DIR, os.path.basename(image_path))
+                    cv2.imwrite(output_path, frame)
+                    send_alert_to_db(2, 2, results.names[int(class_id)], output_path)
+                    move(image_path, output_path)
+                    break  # Exit after processing the first detected image
+            if detected:
+                # If detection occurs, break and delete all remaining images
+                for path in image_paths:
+                    delete_image(path)
+                return
         else:
-            os.remove(image_path)  # Delete images_ with no detections
+            print(f"No valid detections found for {image_path}")  # Debug print
+        delete_image(image_path)  # If no detections, delete the image
+
+import time
+
+def continuous_check():
+    while True:
+      # Wait for 10 seconds before checking the directory again
+        current_files = [os.path.join(IMAGES_DIR, file_name) for file_name in os.listdir(IMAGES_DIR)]
+        if current_files:
+            for file_path in sorted(current_files):
+                time.sleep(5)  # Wait for 5 seconds before processing each file
+                process_images([file_path])  # Process one file at a tim
 
 if __name__ == '__main__':
-    db.create_all()
-    event_handler = ImageEventHandler()
-    observer = Observer()
-    observer.schedule(event_handler, IMAGES_DIR, recursive=False)
-    observer.start()
-    app.run(debug=True, host='0.0.0.0', port=5000)
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+    continuous_check()
